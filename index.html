@@ -3,7 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All‑in‑One QR • Scanner • BG Remover</title>
+  <title>All-in-One QR Generator, Scanner, Background Remover & Image Compressor</title>
+  <meta name="description" content="Free online tools for QR code generation, QR scanning, background removal, and image compression. Works instantly in the browser with no signup." />
+  <meta name="keywords" content="QR code generator, QR scanner, remove background, image compressor, free online tools" />
+  <meta property="og:title" content="All-in-One QR & Image Toolkit" />
+  <meta property="og:description" content="Generate QR codes, scan codes, remove image backgrounds, and compress images online — all in one place." />
+  <meta property="og:image" content="https://yourdomain.com/preview.png" />
+  <meta property="og:url" content="https://yourdomain.com" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- JSON-LD Schema for WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "All-in-One QR & Image Toolkit",
+    "url": "https://yourdomain.com",
+    "description": "Free online QR generator, scanner, background remover, and image compressor.",
+    "applicationCategory": "Utility",
+    "operatingSystem": "All"
+  }
+  </script>
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-XXXXXXXXXX');
+  </script>
+
+  <!-- AdSense (replace ca-pub-########### below when approved) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-###########" crossorigin="anonymous"></script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +58,7 @@
     input, select { font-size: 16px; }
   </style>
   <!-- QR Code Generator (classic) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-MBLkXrTjkQYF2oZr2Q0p5Q0U3nN2sYz/4U3j2Qb4mEJpZyqO6b6qgA9Zb9hQ2k1w0L7YjGqKigTt3r7n5Y2Weg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <!-- QR Scanner -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <!-- Mediapipe Selfie Segmentation (for person-background removal) -->
@@ -51,10 +82,11 @@
   <main class="container mx-auto px-4 pb-20">
     <!-- Tabs -->
     <div class="glass rounded-3xl p-2 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
         <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center font-semibold">QR Generator</button>
         <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">QR Scanner</button>
         <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Background Remover</button>
+        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Compressor</button>
       </div>
     </div>
 
@@ -171,6 +203,71 @@
       </div>
     </section>
 
+    <!-- Image Compressor Panel -->
+    <section id="panel-comp" class="panel hidden grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4">Image Compressor</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block md:col-span-2">
+            <span class="text-sm text-slate-300">Upload</span>
+            <input id="compFile" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Format</span>
+            <select id="compFormat" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+              <option value="auto">Auto (keep type)</option>
+              <option value="image/jpeg">JPEG</option>
+              <option value="image/webp">WebP</option>
+              <option value="image/png">PNG</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Quality (JPEG/WebP)</span>
+            <input id="compQuality" type="range" min="0.4" max="0.95" step="0.05" value="0.8" class="w-full" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Max Width</span>
+            <input id="compMaxW" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Max Height</span>
+            <input id="compMaxH" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+          </label>
+          <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+            <button id="btnCompLocal" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Compress (Local)</button>
+            <button id="btnCompTiny" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Compress with TinyPNG</button>
+          </div>
+          <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-sm text-slate-300">TinyPNG Proxy URL (serverless)</span>
+              <input id="tinyProxy" type="url" placeholder="https://your-proxy.example.com/tinypng" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            </label>
+            <label class="block">
+              <span class="text-sm text-slate-300">TinyPNG API Key (stored in your proxy)</span>
+              <input id="tinyHint" disabled value="Provide via proxy; this field is informational" class="mt-1 w-full rounded-xl bg-slate-900/30 border border-slate-700 p-2 text-slate-500" />
+            </label>
+          </div>
+        </div>
+        <p class="text-sm text-slate-400 mt-3">Local compression runs entirely in your browser. TinyPNG requires a small proxy you control to add API credentials and handle CORS.</p>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4">Preview & Stats</h2>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <h3 class="text-sm text-slate-300 mb-2">Original</h3>
+            <div class="checker rounded-2xl p-2"><img id="compOrigImg" class="w-full rounded-xl" /></div>
+            <div id="compOrigMeta" class="text-xs text-slate-400 mt-1"></div>
+          </div>
+          <div>
+            <h3 class="text-sm text-slate-300 mb-2">Compressed</h3>
+            <div class="checker rounded-2xl p-2"><img id="compOutImg" class="w-full rounded-xl" /></div>
+            <div id="compOutMeta" class="text-xs text-slate-400 mt-1"></div>
+            <div class="mt-3"><button id="btnCompDownload" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="faq" class="mt-10 glass rounded-3xl p-6">
       <h2 class="text-xl font-bold mb-4">Suggestions & Next Features</h2>
       <ul class="list-disc pl-5 space-y-2 text-slate-300">
@@ -197,7 +294,7 @@
   <script>
     // ---------- Tabs
     const tabs = document.querySelectorAll('.tab-btn');
-    const panels = { gen: document.getElementById('panel-gen'), scan: document.getElementById('panel-scan'), bg: document.getElementById('panel-bg') };
+    const panels = { gen: document.getElementById('panel-gen'), scan: document.getElementById('panel-scan'), bg: document.getElementById('panel-bg'), comp: document.getElementById('panel-comp') };
     tabs.forEach(btn => btn.addEventListener('click', () => {
       tabs.forEach(b => b.classList.remove('tab-active'));
       btn.classList.add('tab-active');
@@ -243,7 +340,7 @@
       throw new Error('No QR library could be loaded (network/CSP?)');
     }
 
-    async function makeQR() {() {
+    async function makeQR() {
       const backend = await ensureQrLib();
       const text = document.getElementById('qrText').value || 'https://example.com';
       const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
@@ -278,13 +375,35 @@
       // Apply margin by wrapping in padding
       qrDiv.style.padding = margin + 'px';
 
-      // Logo overlay (optional; works when output is canvas)
-      const file = document.getElementById('qrLogo').files?.[0];
-      if (!file || !canvasEl || canvasEl.tagName !== 'CANVAS') return;
+      // Choice 3A — Auto-convert <img> → <canvas> when a logo is selected,
+      // then draw a rounded (A) logo on top.
+      let file = document.getElementById('qrLogo').files?.[0];
+      if (!canvasEl) return;
+
+      // If the QR output is an <img> and a logo is chosen, convert to canvas first
+      if (file && canvasEl.tagName !== 'CANVAS') {
+        const imgEl = canvasEl;
+        const c = document.createElement('canvas');
+        const w = imgEl.naturalWidth || size;
+        const h = imgEl.naturalHeight || size;
+        c.width = w; c.height = h;
+        const ctx0 = c.getContext('2d');
+        ctx0.drawImage(imgEl, 0, 0, w, h);
+        // Replace DOM so downstream code sees a canvas
+        qrDiv.innerHTML = '';
+        qrDiv.appendChild(c);
+        canvasEl = c;
+      }
+
+      // If no logo file, we are done
+      if (!file) return;
+
+      // Draw rounded logo with white pad
       const reader = new FileReader();
       reader.onload = () => {
         const logo = new Image();
         logo.onload = () => {
+          if (!canvasEl || canvasEl.tagName !== 'CANVAS') return; // safety
           const ctx = canvasEl.getContext('2d');
           const s = Math.min(canvasEl.width, canvasEl.height);
           const target = Math.floor(s * 0.2); // 20%
@@ -497,13 +616,22 @@
       try {
         const backend = await ensureQrLib();
         results.push(['lib-loaded', backend === 'qrcodejs' || backend === 'qrcode-module']);
+        // Test 1: basic QR render
         document.getElementById('qrText').value = 'test://qr';
         await makeQR();
-        const el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
+        let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
         results.push(['qr-rendered', !!el]);
-        const png = dataUrlFromCanvasOrImg(el);
+        // Test 2: PNG data URL
+        const png = el ? dataUrlFromCanvasOrImg(el) : '';
         results.push(['png-dataurl', typeof png === 'string' && png.startsWith('data:image/png')]);
-        const svg = svgFromElement(el, 128, '#ffffff');
+        // Test 3: size change respected
+        document.getElementById('qrSize').value = '256';
+        await makeQR();
+        el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
+        const w = el && el.width ? el.width : (el && el.naturalWidth);
+        results.push(['size-256', w === 256]);
+        // Test 4: SVG string build
+        const svg = el ? svgFromElement(el, 128, '#ffffff') : '';
         results.push(['svg-string', typeof svg === 'string' && svg.includes('<svg')]);
       } catch (e) {
         console.error('Self tests error', e);
@@ -513,6 +641,104 @@
     }
     // Run once after initial paint
     setTimeout(runSelfTests, 300);
+
+    // ---------- IMAGE COMPRESSION (Local + TinyPNG via proxy)
+    const compFile = document.getElementById('compFile');
+    const compFormatSel = document.getElementById('compFormat');
+    const compQuality = document.getElementById('compQuality');
+    const compMaxW = document.getElementById('compMaxW');
+    const compMaxH = document.getElementById('compMaxH');
+    const compOrigImg = document.getElementById('compOrigImg');
+    const compOutImg = document.getElementById('compOutImg');
+    const compOrigMeta = document.getElementById('compOrigMeta');
+    const compOutMeta = document.getElementById('compOutMeta');
+    const btnCompLocal = document.getElementById('btnCompLocal');
+    const btnCompTiny = document.getElementById('btnCompTiny');
+    const btnCompDownload = document.getElementById('btnCompDownload');
+    const tinyProxy = document.getElementById('tinyProxy');
+
+    let lastCompressedBlob;
+
+    compFile?.addEventListener('change', () => {
+      const f = compFile.files?.[0]; if (!f) return;
+      const url = URL.createObjectURL(f);
+      compOrigImg.src = url;
+      compOrigMeta.textContent = `${f.type} • ${(f.size/1024).toFixed(1)} KB`;
+    });
+
+    btnCompLocal?.addEventListener('click', async () => {
+      const f = compFile.files?.[0]; if (!f) return alert('Upload an image first.');
+      const img = await blobToImage(f);
+      const maxW = parseInt(compMaxW.value,10)||1920;
+      const maxH = parseInt(compMaxH.value,10)||1920;
+      const {canvas,w,h} = drawToFit(img, maxW, maxH);
+      let mime = compFormatSel.value==='auto' ? f.type || 'image/jpeg' : compFormatSel.value;
+      // Browsers may not support requested mime; fallback logic
+      if (!/image\/(png|jpeg|webp)/.test(mime)) mime = 'image/jpeg';
+      const quality = parseFloat(compQuality.value)||0.8;
+      const blob = await canvasToBlob(canvas, mime, quality);
+      lastCompressedBlob = blob;
+      const url = URL.createObjectURL(blob);
+      compOutImg.src = url;
+      compOutMeta.textContent = `${mime} • ${(blob.size/1024).toFixed(1)} KB • ${(100 - (blob.size/f.size*100)).toFixed(1)}% saved`;
+    });
+
+    btnCompTiny?.addEventListener('click', async () => {
+      const f = compFile.files?.[0]; if (!f) return alert('Upload an image first.');
+      const proxy = tinyProxy.value.trim();
+      if (!proxy) return alert('Enter your TinyPNG proxy URL first.');
+      try{
+        const fd = new FormData();
+        fd.append('file', f, f.name);
+        const resp = await fetch(proxy, { method: 'POST', body: fd });
+        if (!resp.ok) throw new Error('Proxy error: '+resp.status);
+        const blob = await resp.blob();
+        lastCompressedBlob = blob;
+        const url = URL.createObjectURL(blob);
+        compOutImg.src = url;
+        compOutMeta.textContent = `${blob.type||'image/png'} • ${(blob.size/1024).toFixed(1)} KB • ${(100 - (blob.size/f.size*100)).toFixed(1)}% saved (TinyPNG)`;
+      } catch(e){ alert('TinyPNG proxy request failed: '+e.message); }
+    });
+
+    btnCompDownload?.addEventListener('click', () => {
+      if (!lastCompressedBlob) return alert('No compressed image yet.');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(lastCompressedBlob);
+      a.download = 'compressed';
+      a.click();
+    });
+
+    function drawToFit(img, maxW, maxH){
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const ratio = Math.min(maxW / w, maxH / h, 1);
+      w = Math.round(w*ratio); h = Math.round(h*ratio);
+      const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, w, h);
+      return {canvas,w,h};
+    }
+    function canvasToBlob(canvas, mime, quality){
+      return new Promise(res => canvas.toBlob(b => res(b), mime, quality));
+    }
+    function blobToImage(blob){
+      return new Promise(res => { const img = new Image(); img.onload=()=>res(img); img.src = URL.createObjectURL(blob); });
+    }
+
+    // ----- Self-tests for compressor (console only)
+    async function compressorSelfTests(){
+      const results=[];
+      try{
+        // create tiny test canvas
+        const c=document.createElement('canvas'); c.width=64; c.height=64; const ctx=c.getContext('2d'); ctx.fillStyle='#0af'; ctx.fillRect(0,0,64,64);
+        const blob=await canvasToBlob(c,'image/png');
+        const img=await blobToImage(blob);
+        const {canvas}=drawToFit(img,32,32);
+        const out=await canvasToBlob(canvas,'image/jpeg',0.8);
+        results.push(['local-compress', out.size>0 && out.size<=blob.size]);
+      }catch(e){ results.push(['exception', false]); console.error(e); }
+      console.table(results.map(([k,v])=>({test:k, pass:!!v})));
+    }
+    setTimeout(compressorSelfTests, 600);
   </script>
 </body>
 </html>
