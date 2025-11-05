@@ -209,16 +209,41 @@
     let qr; const qrDiv = document.getElementById('qrPreview');
 
     async function ensureQrLib(){
+      // Prefer classic qrcodejs global (QRCode)
       if (window.QRCode) return 'qrcodejs';
-      if (window.qrcode) return 'qrcode-module';
-      try {
-        const mod = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js');
-        window.qrcode = mod.default || mod; // expose for global use
-        return 'qrcode-module';
-      } catch(e){ console.warn('QR lib load failed', e); throw e; }
+
+      // Helper to load a script tag with fallback
+      const loadScript = (src) => new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src; s.async = true; s.crossOrigin = 'anonymous';
+        s.onload = () => resolve(true);
+        s.onerror = () => reject(new Error('Failed to load ' + src));
+        document.head.appendChild(s);
+      });
+
+      // Try multiple CDNs for qrcodejs (global QRCode)
+      const qrcodejsCDNs = [
+        'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
+        'https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js',
+        'https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js'
+      ];
+      for (const url of qrcodejsCDNs) {
+        try { await loadScript(url); if (window.QRCode) return 'qrcodejs'; } catch(e){ console.warn('CDN fail', url); }
+      }
+
+      // Fallback: "qrcode" npm browser bundle (global window.qrcode)
+      const qrcodeBundleCDNs = [
+        'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js',
+        'https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js'
+      ];
+      for (const url of qrcodeBundleCDNs) {
+        try { await loadScript(url); if (window.qrcode) return 'qrcode-module'; } catch(e){ console.warn('CDN fail', url); }
+      }
+
+      throw new Error('No QR library could be loaded (network/CSP?)');
     }
 
-    async function makeQR() {
+    async function makeQR() {() {
       const backend = await ensureQrLib();
       const text = document.getElementById('qrText').value || 'https://example.com';
       const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
