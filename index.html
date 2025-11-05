@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All‑in‑One QR • Scanner • BG Remover</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #0b1220; --card: #0f172a; --muted: #94a3b8; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: radial-gradient(1200px 600px at 80% -100px, #1e293b 10%, transparent 50%), radial-gradient(900px 500px at -15% 0%, #0ea5e9 0%, transparent 60%), var(--bg); color: #e2e8f0; }
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); box-shadow: 0 10px 30px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(10px); }
+    .tab-active { background: #111827; border-color: #374151; }
+    .grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .hidden-input { opacity:0; position:absolute; left:-9999px; }
+    .srchighlight { box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 10px 20px rgba(14,165,233,.25); }
+    .checker {
+      background-image: linear-gradient(45deg, #94a3b822 25%, transparent 25%),
+                        linear-gradient(-45deg, #94a3b822 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, #94a3b822 75%),
+                        linear-gradient(-45deg, transparent 75%, #94a3b822 75%);
+      background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    }
+    /* Prevent iOS zoom on inputs */
+    input, select { font-size: 16px; }
+  </style>
+  <!-- QR Code Generator (classic) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-MBLkXrTjkQYF2oZr2Q0p5Q0U3nN2sYz/4U3j2Qb4mEJpZyqO6b6qgA9Zb9hQ2k1w0L7YjGqKigTt3r7n5Y2Weg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- QR Scanner -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Mediapipe Selfie Segmentation (for person-background removal) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+</head>
+<body class="min-h-screen">
+  <header class="container mx-auto px-4 py-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center"><span class="text-cyan-300 font-black">QR</span></div>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">All‑in‑One QR & Image Toolkit</h1>
+      </div>
+      <div class="hidden md:flex items-center gap-2 text-sm text-slate-300">
+        <a class="underline/30 hover:underline" href="#faq">FAQ</a>
+        <span class="opacity-50">•</span>
+        <a class="underline/30 hover:underline" href="#privacy">Privacy</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 pb-20">
+    <!-- Tabs -->
+    <div class="glass rounded-3xl p-2 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center font-semibold">QR Generator</button>
+        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">QR Scanner</button>
+        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Background Remover</button>
+      </div>
+    </div>
+
+    <!-- Panels -->
+    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4">Customize</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="text-sm text-slate-300">Content / URL</span>
+            <textarea id="qrText" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-3" rows="4" placeholder="https://your-link.com"></textarea>
+          </label>
+          <div class="grid grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm text-slate-300">Size</span>
+              <input id="qrSize" type="number" min="128" max="1024" value="320" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            </label>
+            <label class="block">
+              <span class="text-sm text-slate-300">Margin (px)</span>
+              <input id="qrMargin" type="number" min="0" max="16" value="2" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            </label>
+            <label class="block col-span-2">
+              <span class="text-sm text-slate-300">Error Correction</span>
+              <select id="qrEC" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+                <option value="L">L (7%)</option>
+                <option value="M" selected>M (15%)</option>
+                <option value="Q">Q (25%)</option>
+                <option value="H">H (30%)</option>
+              </select>
+            </label>
+          </div>
+          <label class="block">
+            <span class="text-sm text-slate-300">Foreground</span>
+            <input id="qrFg" type="color" value="#000000" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Background</span>
+            <input id="qrBg" type="color" value="#ffffff" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
+          </label>
+          <label class="block col-span-2">
+            <span class="text-sm text-slate-300">Center Logo (optional)</span>
+            <input id="qrLogo" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
+          </label>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button id="btnGen" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Generate</button>
+          <button id="btnDownloadPNG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
+          <button id="btnDownloadSVG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download SVG</button>
+        </div>
+      </div>
+      <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center">
+        <h3 class="text-lg font-semibold mb-3">Preview</h3>
+        <div id="qrPreview" class="bg-white p-3 rounded-2xl">
+          <!-- QR renders here -->
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-scan" class="panel hidden grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4">Scan with Camera</h2>
+        <div id="qr-reader" class="rounded-2xl overflow-hidden"></div>
+        <div class="mt-4 flex gap-3">
+          <button id="btnScanStart" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Start</button>
+          <button id="btnScanStop" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Stop</button>
+        </div>
+        <p class="text-sm text-slate-400 mt-3">Permission prompt will appear the first time. Works best in good lighting.</p>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4">Scan from Image</h2>
+        <input id="scanFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+        <div id="scanResult" class="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-700"></div>
+      </div>
+    </section>
+
+    <section id="panel-bg" class="panel hidden grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4">Upload Image</h2>
+        <input id="bgFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="text-sm text-slate-300">Mode</label>
+            <select id="bgMode" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+              <option value="auto-person">AI: Person Cutout (on-device)</option>
+              <option value="chroma">Chroma‑Key (solid background)</option>
+            </select>
+          </div>
+          <div id="chromaOptions" class="hidden">
+            <label class="text-sm text-slate-300">Chroma Color</label>
+            <input id="chromaColor" type="color" value="#00ff00" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
+            <label class="text-sm text-slate-300 block mt-3">Tolerance</label>
+            <input id="chromaTol" type="range" min="5" max="80" value="18" class="w-full" />
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button id="btnRemoveBg" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Remove Background</button>
+          <button id="btnDownloadCutout" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
+        </div>
+        <p class="text-sm text-slate-400 mt-3">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <h2 class="text-xl font-bold mb-4">Preview</h2>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <h3 class="text-sm text-slate-300 mb-2">Input</h3>
+            <div class="checker rounded-2xl p-2"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
+          </div>
+          <div>
+            <h3 class="text-sm text-slate-300 mb-2">Cutout</h3>
+            <div class="checker rounded-2xl p-2"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="mt-10 glass rounded-3xl p-6">
+      <h2 class="text-xl font-bold mb-4">Suggestions & Next Features</h2>
+      <ul class="list-disc pl-5 space-y-2 text-slate-300">
+        <li>QR types: vCard, Wi‑Fi, Email, SMS, Geo, Calendar, and bulk generation (CSV upload).</li>
+        <li>Branding: templates, gradient/eye shapes, logo safe‑zone checker, vector (SVG) export with outlines.</li>
+        <li>Short links & analytics: integrate a link shortener with scan analytics (UTM, device, geo).</li>
+        <li>Scanner enhancements: barcode formats (EAN/UPC/PDF417), torch toggle, file‑scan batch mode.</li>
+        <li>Background remover: add API mode (e.g., remove.bg) for general objects; queue + batch.</li>
+        <li>Workspace: project folders, recent items, version history, one‑click social export sizes.</li>
+        <li>Installable PWA: offline QR generator & scanner; camera permissions remembered.</li>
+        <li>Auth & billing: free tier limits, credits for BG removals, webhooks, and REST API.</li>
+      </ul>
+    </section>
+
+    <section id="privacy" class="mt-6 text-slate-400 text-sm">
+      <p><strong>Privacy:</strong> Everything runs locally in your browser. Camera frames are processed on‑device. If you later enable an external API for background removal, those images will leave the device per that provider’s policy.</p>
+    </section>
+  </main>
+
+  <footer class="container mx-auto px-4 py-10 text-center text-slate-400 text-sm">
+    Built with ❤️ — Frontend‑only MVP. No server required.
+  </footer>
+
+  <script>
+    // ---------- Tabs
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = { gen: document.getElementById('panel-gen'), scan: document.getElementById('panel-scan'), bg: document.getElementById('panel-bg') };
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('tab-active'));
+      btn.classList.add('tab-active');
+      const key = btn.dataset.tab;
+      Object.entries(panels).forEach(([k, el]) => el.classList.toggle('hidden', k !== key));
+    }));
+
+    // ---------- QR GENERATOR
+    let qr; const qrDiv = document.getElementById('qrPreview');
+
+    async function ensureQrLib(){
+      if (window.QRCode) return 'qrcodejs';
+      if (window.qrcode) return 'qrcode-module';
+      try {
+        const mod = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js');
+        window.qrcode = mod.default || mod; // expose for global use
+        return 'qrcode-module';
+      } catch(e){ console.warn('QR lib load failed', e); throw e; }
+    }
+
+    async function makeQR() {
+      const backend = await ensureQrLib();
+      const text = document.getElementById('qrText').value || 'https://example.com';
+      const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
+      const fg = document.getElementById('qrFg').value || '#000000';
+      const bg = document.getElementById('qrBg').value || '#ffffff';
+      const ec = (document.getElementById('qrEC').value || 'M');
+      const margin = parseInt(document.getElementById('qrMargin').value, 10) || 2;
+
+      qrDiv.innerHTML = '';
+
+      let canvasEl;
+      if (backend === 'qrcodejs') {
+        // classic qrcodejs path
+        qr = new QRCode(qrDiv, {
+          text, width: size, height: size,
+          colorDark: fg, colorLight: bg,
+          correctLevel: QRCode.CorrectLevel[ec] || QRCode.CorrectLevel.M,
+        });
+        canvasEl = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
+      } else {
+        // fallback to qrcode (toCanvas)
+        canvasEl = document.createElement('canvas');
+        canvasEl.width = size; canvasEl.height = size;
+        qrDiv.appendChild(canvasEl);
+        await window.qrcode.toCanvas(canvasEl, text, {
+          width: size,
+          color: { dark: fg, light: bg },
+          errorCorrectionLevel: ec
+        });
+      }
+
+      // Apply margin by wrapping in padding
+      qrDiv.style.padding = margin + 'px';
+
+      // Logo overlay (optional; works when output is canvas)
+      const file = document.getElementById('qrLogo').files?.[0];
+      if (!file || !canvasEl || canvasEl.tagName !== 'CANVAS') return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const logo = new Image();
+        logo.onload = () => {
+          const ctx = canvasEl.getContext('2d');
+          const s = Math.min(canvasEl.width, canvasEl.height);
+          const target = Math.floor(s * 0.2); // 20%
+          const x = (canvasEl.width - target) / 2;
+          const y = (canvasEl.height - target) / 2;
+          const r = 12;
+          ctx.save();
+          ctx.fillStyle = '#ffffffcc';
+          roundRect(ctx, x - 8, y - 8, target + 16, target + 16, r);
+          ctx.fill();
+          ctx.restore();
+          ctx.drawImage(logo, x, y, target, target);
+        };
+        logo.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    document.getElementById('btnGen').addEventListener('click', () => makeQR());
+    // initial render (non-blocking)
+    makeQR();
+
+    function dataUrlFromCanvasOrImg(el, mime = 'image/png') {
+      if (el.tagName === 'CANVAS') return el.toDataURL(mime);
+      // if img element, draw into temp canvas
+      const cvs = document.createElement('canvas');
+      cvs.width = el.width; cvs.height = el.height;
+      cvs.getContext('2d').drawImage(el, 0, 0);
+      return cvs.toDataURL(mime);
+    }
+
+    function svgFromElement(el, size, bg) {
+      const data = dataUrlFromCanvasOrImg(el, 'image/png');
+      return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="100%" height="100%" fill="${bg}"/><image href="${data}" x="0" y="0" width="${size}" height="${size}"/></svg>`;
+    }
+
+    function downloadURI(uri, name) {
+      const a = document.createElement('a'); a.href = uri; a.download = name; a.click();
+    }
+
+    document.getElementById('btnDownloadPNG').addEventListener('click', () => {
+      const el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
+      if (!el) return alert('Generate a QR first.');
+      downloadURI(dataUrlFromCanvasOrImg(el, 'image/png'), 'qr.png');
+    });
+
+    document.getElementById('btnDownloadSVG').addEventListener('click', async () => {
+      // Export current output as PNG-wrapped SVG for compatibility
+      let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
+      if (!el) await makeQR();
+      el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
+      if (!el) return alert('Generate a QR first.');
+      const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
+      const bg = document.getElementById('qrBg').value || '#ffffff';
+      const svg = svgFromElement(el, size, bg);
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      downloadURI(URL.createObjectURL(blob), 'qr.svg');
+    });
+
+    // ---------- QR SCANNER
+    let html5QrCode;
+    const qrReaderEl = document.getElementById('qr-reader');
+    const scanResultEl = document.getElementById('scanResult');
+
+    async function startScanner() {
+      try {
+        if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
+        const cams = await Html5Qrcode.getCameras();
+        const camId = cams?.[0]?.id;
+        if (!camId) throw new Error('No camera found');
+        await html5QrCode.start(camId, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure);
+      } catch (e) { alert('Camera error: ' + e.message); }
+    }
+    function onScanSuccess(decodedText) {
+      scanResultEl.innerHTML = `<div class="srchighlight rounded-xl p-3 bg-slate-900/70 border border-slate-700"><div class="text-xs text-slate-400 mb-1">Result</div><div class="font-mono break-all">${escapeHtml(decodedText)}</div><div class='mt-2'><a class='text-cyan-400 underline' target='_blank' href='${decodedText}'>Open</a></div></div>`;
+    }
+    function onScanFailure() { /* ignore continuous errors */ }
+    document.getElementById('btnScanStart').addEventListener('click', startScanner);
+    document.getElementById('btnScanStop').addEventListener('click', async () => {
+      if (html5QrCode) await html5QrCode.stop();
+    });
+
+    document.getElementById('scanFile').addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
+      const res = await html5QrCode.scanFile(file, true);
+      onScanSuccess(res);
+    });
+
+    function escapeHtml(str) { return str.replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+    // ---------- BACKGROUND REMOVAL
+    const inC = document.getElementById('inCanvas');
+    const outC = document.getElementById('outCanvas');
+    const inCtx = inC.getContext('2d');
+    const outCtx = outC.getContext('2d');
+
+    const bgModeSel = document.getElementById('bgMode');
+    const chromaOptions = document.getElementById('chromaOptions');
+    const chromaColor = document.getElementById('chromaColor');
+    const chromaTol = document.getElementById('chromaTol');
+
+    bgModeSel.addEventListener('change', () => {
+      chromaOptions.classList.toggle('hidden', bgModeSel.value !== 'chroma');
+    });
+
+    let sourceImg;
+    document.getElementById('bgFile').addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => { sourceImg = img; drawInput(img); };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(f);
+    });
+
+    function drawInput(img) {
+      const maxW = 900, maxH = 600;
+      let { width:w, height:h } = img;
+      const ratio = Math.min(maxW / w, maxH / h, 1);
+      w = Math.round(w * ratio); h = Math.round(h * ratio);
+      inC.width = outC.width = w; inC.height = outC.height = h;
+      inCtx.clearRect(0,0,w,h); outCtx.clearRect(0,0,w,h);
+      inCtx.drawImage(img, 0, 0, w, h);
+    }
+
+    async function removeBackground() {
+      if (!sourceImg) return alert('Upload an image first.');
+      if (bgModeSel.value === 'chroma') {
+        chromaKey();
+      } else {
+        await personCutout();
+      }
+    }
+
+    document.getElementById('btnRemoveBg').addEventListener('click', removeBackground);
+
+    document.getElementById('btnDownloadCutout').addEventListener('click', () => {
+      if (!outC.width) return alert('No cutout to download.');
+      outC.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'cutout.png'; a.click(); }, 'image/png');
+    });
+
+    function chromaKey() {
+      const w = inC.width, h = inC.height;
+      const src = inCtx.getImageData(0,0,w,h);
+      const dst = outCtx.createImageData(w,h);
+      const [rT,gT,bT] = hexToRgb(chromaColor.value);
+      const tol = parseInt(chromaTol.value,10);
+      for (let i=0;i<src.data.length;i+=4){
+        const r=src.data[i], g=src.data[i+1], b=src.data[i+2], a=src.data[i+3];
+        const dist = Math.sqrt((r-rT)**2 + (g-gT)**2 + (b-bT)**2);
+        const keep = dist > tol * 3; // rough mapping
+        dst.data[i] = r; dst.data[i+1] = g; dst.data[i+2] = b; dst.data[i+3] = keep ? a : 0;
+      }
+      outCtx.putImageData(dst,0,0);
+    }
+
+    async function personCutout() {
+      // Uses Mediapipe SelfieSegmentation (person only)
+      const w = inC.width, h = inC.height;
+      const selfie = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
+      selfie.setOptions({ modelSelection: 1 }); // 0: landscape, 1: general
+      await new Promise(resolve => {
+        selfie.onResults((res) => {
+          const mask = res.segmentationMask; // HTMLCanvasElement
+          // Compose: keep person (white) remove background (black)
+          const tmp = document.createElement('canvas'); tmp.width=w; tmp.height=h;
+          const tctx = tmp.getContext('2d');
+          tctx.drawImage(inC,0,0,w,h);
+          // Use mask as alpha
+          outCtx.clearRect(0,0,w,h);
+          outCtx.save();
+          outCtx.drawImage(mask,0,0,w,h);
+          outCtx.globalCompositeOperation = 'source-in';
+          outCtx.drawImage(inC,0,0,w,h);
+          outCtx.restore();
+          resolve();
+        });
+        // Convert the current canvas to an image and send to Mediapipe as if it were a video frame
+        const img = new Image(); img.onload = () => selfie.send({ image: img });
+        img.src = inC.toDataURL('image/png');
+      });
+    }
+
+    function hexToRgb(hex){
+      const v = hex.replace('#','');
+      const bigint = parseInt(v,16);
+      return v.length===3
+        ? [ (bigint>>8&0xF)*17, (bigint>>4&0xF)*17, (bigint&0xF)*17 ]
+        : [ bigint>>16 & 255, bigint>>8 & 255, bigint & 255 ];
+    }
+
+    // ---------- Minimal Self Tests (console) ----------
+    async function runSelfTests(){
+      const results = [];
+      try {
+        const backend = await ensureQrLib();
+        results.push(['lib-loaded', backend === 'qrcodejs' || backend === 'qrcode-module']);
+        document.getElementById('qrText').value = 'test://qr';
+        await makeQR();
+        const el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
+        results.push(['qr-rendered', !!el]);
+        const png = dataUrlFromCanvasOrImg(el);
+        results.push(['png-dataurl', typeof png === 'string' && png.startsWith('data:image/png')]);
+        const svg = svgFromElement(el, 128, '#ffffff');
+        results.push(['svg-string', typeof svg === 'string' && svg.includes('<svg')]);
+      } catch (e) {
+        console.error('Self tests error', e);
+        results.push(['exception', false]);
+      }
+      console.table(results.map(([k, v]) => ({ test: k, pass: !!v })));
+    }
+    // Run once after initial paint
+    setTimeout(runSelfTests, 300);
+  </script>
+</body>
+</html>
