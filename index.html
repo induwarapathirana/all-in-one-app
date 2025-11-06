@@ -32,7 +32,7 @@
     function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-JDSMMSJ15R');
   </script>
 
-  <!-- AdSense (approved client) -->
+  <!-- AdSense (replace ca-pub-########### below when approved) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1909319391447068" crossorigin="anonymous"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -129,24 +129,20 @@
           <label class="block col-span-2">
             <span class="text-sm text-slate-300">Center Logo (optional)</span>
             <input id="qrLogo" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            <div class="mt-2 flex items-center gap-3">
-              <img id="qrLogoPreview" class="w-12 h-12 rounded-xl object-contain bg-slate-800/60 border border-slate-700" alt="Logo preview"/>
-              <small id="qrLogoMeta" class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
-            </div>
+            <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
           </label>
         </div>
-        <div class="flex gap-3 mt-6 flex-wrap">
+        <div class="flex gap-3 mt-6">
           <button id="btnGen" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Generate</button>
           <button id="btnDownloadPNG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
           <button id="btnDownloadSVG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download SVG</button>
         </div>
       </div>
-      <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center overflow-hidden">
+      <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center">
         <h3 class="text-lg font-semibold mb-3">Preview</h3>
-        <div id="qrPreview" class="bg-white p-3 rounded-2xl max-w-full overflow-hidden">
+        <div id="qrPreview" class="bg-white p-3 rounded-2xl">
           <!-- QR renders here -->
         </div>
-        <p class="mt-3 text-xs text-slate-400 text-center">Logo is drawn into the final QR preview after you click <strong>Generate</strong>.</p>
       </div>
     </section>
 
@@ -154,7 +150,7 @@
       <div class="glass rounded-3xl p-6">
         <h2 class="text-xl font-bold mb-4">Scan with Camera</h2>
         <div id="qr-reader" class="rounded-2xl overflow-hidden"></div>
-        <div class="mt-4 flex gap-3 flex-wrap">
+        <div class="mt-4 flex gap-3">
           <button id="btnScanStart" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Start</button>
           <button id="btnScanStop" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Stop</button>
         </div>
@@ -185,16 +181,8 @@
             <label class="text-sm text-slate-300 block mt-3">Tolerance</label>
             <input id="chromaTol" type="range" min="5" max="80" value="18" class="w-full" />
           </div>
-          <div>
-            <label class="text-sm text-slate-300">Feather (px)</label>
-            <input id="bgFeather" type="range" min="0" max="16" value="4" class="w-full" />
-          </div>
-          <div>
-            <label class="text-sm text-slate-300">Strength (%)</label>
-            <input id="bgStrength" type="range" min="40" max="100" value="100" class="w-full" />
-          </div>
         </div>
-        <div class="flex gap-3 mt-6 flex-wrap">
+        <div class="flex gap-3 mt-6">
           <button id="btnRemoveBg" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Remove Background</button>
           <button id="btnDownloadCutout" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
         </div>
@@ -205,11 +193,11 @@
         <div class="grid grid-cols-1 gap-4">
           <div>
             <h3 class="text-sm text-slate-300 mb-2">Input</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="inCanvas" class="w-full h-auto max-w-full rounded-xl"></canvas></div>
+            <div class="checker rounded-2xl p-2"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
           <div>
             <h3 class="text-sm text-slate-300 mb-2">Cutout</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="outCanvas" class="w-full h-auto max-w-full rounded-xl"></canvas></div>
+            <div class="checker rounded-2xl p-2"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
         </div>
       </div>
@@ -280,6 +268,7 @@
       </div>
     </section>
 
+    <!--
     <section id="faq" class="mt-10 glass rounded-3xl p-6">
       <h2 class="text-xl font-bold mb-4">Suggestions & Next Features</h2>
       <ul class="list-disc pl-5 space-y-2 text-slate-300">
@@ -293,6 +282,7 @@
         <li>Auth & billing: free tier limits, credits for BG removals, webhooks, and REST API.</li>
       </ul>
     </section>
+    -->
 
     <section id="privacy" class="mt-6 text-slate-400 text-sm">
       <p><strong>Privacy:</strong> Everything runs locally in your browser. Camera frames are processed on‑device. If you later enable an external API for background removal, those images will leave the device per that provider’s policy.</p>
@@ -316,22 +306,6 @@
 
     // ---------- QR GENERATOR
     let qr; const qrDiv = document.getElementById('qrPreview');
-
-    // --- QR Logo live preview & UX helpers
-    const qrLogoInput = document.getElementById('qrLogo');
-    const qrLogoPreview = document.getElementById('qrLogoPreview');
-    const qrLogoMeta = document.getElementById('qrLogoMeta');
-    const qrECSelect = document.getElementById('qrEC');
-    qrLogoInput?.addEventListener('change', () => {
-      const f = qrLogoInput.files?.[0];
-      if (!f) { qrLogoPreview.removeAttribute('src'); qrLogoMeta.textContent = 'No logo selected.'; return; }
-      qrLogoPreview.src = URL.createObjectURL(f);
-      qrLogoMeta.textContent = `${f.name} • ${(f.size/1024).toFixed(1)} KB`;
-      // Suggest bumping EC to H for better scan reliability with logos
-      if (qrECSelect && qrECSelect.value !== 'H') {
-        qrECSelect.value = 'H';
-      }
-    });
 
     async function ensureQrLib(){
       // Prefer classic qrcodejs global (QRCode)
@@ -403,7 +377,8 @@
       // Apply margin by wrapping in padding
       qrDiv.style.padding = margin + 'px';
 
-      // Logo overlay
+      // Choice 3A — Auto-convert <img> → <canvas> when a logo is selected,
+      // then draw a rounded (A) logo on top.
       let file = document.getElementById('qrLogo').files?.[0];
       if (!canvasEl) return;
 
@@ -422,7 +397,7 @@
         canvasEl = c;
       }
 
-      // If no logo file, stop here (QR already visible)
+      // If no logo file, we are done
       if (!file) return;
 
       // Draw rounded logo with white pad
@@ -459,11 +434,7 @@
       ctx.closePath();
     }
 
-    document.getElementById('btnGen').addEventListener('click', async () => {
-      await makeQR();
-      // Scroll preview into view on small screens for better UX
-      document.getElementById('qrPreview')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+    document.getElementById('btnGen').addEventListener('click', () => makeQR());
     // initial render (non-blocking)
     makeQR();
 
@@ -607,38 +578,11 @@
     }
 
     async function personCutout() {
-      // Uses Mediapipe SelfieSegmentation (person only) with feathering & strength controls
+      // Uses Mediapipe SelfieSegmentation (person only)
       const w = inC.width, h = inC.height;
-      const feather = parseInt(document.getElementById('bgFeather').value, 10) || 0;
-      const strength = (parseInt(document.getElementById('bgStrength').value, 10) || 100) / 100;
       const selfie = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
       selfie.setOptions({ modelSelection: 1 }); // 0: landscape, 1: general
       await new Promise(resolve => {
-        selfie.onResults((res) => {
-          const mask = res.segmentationMask; // HTMLCanvasElement
-
-          // Prepare a blurred mask according to feather
-          const mC = document.createElement('canvas'); mC.width = w; mC.height = h;
-          const mCtx = mC.getContext('2d');
-          if (feather > 0) mCtx.filter = `blur(${feather}px)`;
-          mCtx.drawImage(mask, 0, 0, w, h);
-          // Compose: keep person (white) remove background (black)
-          outCtx.clearRect(0,0,w,h);
-          outCtx.save();
-          outCtx.drawImage(mC,0,0,w,h);
-          outCtx.globalCompositeOperation = 'source-in';
-          outCtx.globalAlpha = strength;
-          outCtx.drawImage(inC,0,0,w,h);
-          outCtx.restore();
-          resolve();
-        });
-        // Convert the current canvas to an image and send to Mediapipe as if it were a video frame
-        const img = new Image(); img.onload = () => selfie.send({ image: img });
-        img.src = inC.toDataURL('image/png');
-      });
-    }
-
-    function hexToRgb(hex){
         selfie.onResults((res) => {
           const mask = res.segmentationMask; // HTMLCanvasElement
           // Compose: keep person (white) remove background (black)
@@ -783,70 +727,20 @@
     }
 
     // ----- Self-tests for compressor (console only)
-    async function compressorSelfTest(){
-      const results = [];
+    async function compressorSelfTests(){
+      const results=[];
       try{
-        // 1. simulate small PNG blob
-        const tmpCanvas = document.createElement('canvas'); tmpCanvas.width=200; tmpCanvas.height=100;
-        const tctx = tmpCanvas.getContext('2d'); tctx.fillStyle='#f00'; tctx.fillRect(0,0,200,100);
-        const testBlob = await new Promise(r => tmpCanvas.toBlob(r,'image/png'));
-        results.push(['png-blob-created', testBlob instanceof Blob]);
-
-        // 2. convert blob->image
-        const img = await blobToImage(testBlob);
-        results.push(['blobToImage', img instanceof HTMLImageElement]);
-
-        // 3. drawToFit (resize down to 100x50)
-        const {canvas:wC,w,h} = drawToFit(img,100,50);
-        results.push(['drawToFit-size', wC.width===100 && wC.height===50]);
-
-        // 4. canvasToBlob with jpeg
-        const jpegBlob = await canvasToBlob(wC,'image/jpeg',0.8);
-        results.push(['canvasToBlob-jpeg', jpegBlob.type==='image/jpeg']);
-
-        // 5. basic compression percent check
-        results.push(['compression-saved', jpegBlob.size < testBlob.size]);
-      }catch(e){console.error('compressorSelfTest error',e); results.push(['exception',false]);}
-      console.table(results.map(([k,v])=>({test:k,pass:!!v})));
+        // create tiny test canvas
+        const c=document.createElement('canvas'); c.width=64; c.height=64; const ctx=c.getContext('2d'); ctx.fillStyle='#0af'; ctx.fillRect(0,0,64,64);
+        const blob=await canvasToBlob(c,'image/png');
+        const img=await blobToImage(blob);
+        const {canvas}=drawToFit(img,32,32);
+        const out=await canvasToBlob(canvas,'image/jpeg',0.8);
+        results.push(['local-compress', out.size>0 && out.size<=blob.size]);
+      }catch(e){ results.push(['exception', false]); console.error(e); }
+      console.table(results.map(([k,v])=>({test:k, pass:!!v})));
     }
-    // run once
-    // ----- Self-tests for compressor (console only)
-    async function compressorSelfTest(){
-      const results = [];
-
-      try {
-        // 1. Generate a small red canvas as a fake upload
-        const testCanvas = document.createElement('canvas');
-        testCanvas.width = 200;
-        testCanvas.height = 100;
-        const ctx = testCanvas.getContext('2d');
-        ctx.fillStyle = '#ff0000';
-        ctx.fillRect(0, 0, 200, 100);
-
-        const origBlob = await new Promise(r => testCanvas.toBlob(r, 'image/png'));
-        const origSizeKB = origBlob.size / 1024;
-        results.push(['original-blob-kb>0', origSizeKB > 0]);
-
-        // 2. Compress locally with JPEG, quality 0.5
-        const img = await blobToImage(origBlob);
-        const { canvas } = drawToFit(img, 200, 100);
-        const compBlob = await canvasToBlob(canvas, 'image/jpeg', 0.5);
-        const compSizeKB = compBlob.size / 1024;
-        results.push(['compressed-size<original', compSizeKB < origSizeKB]);
-
-        // 3. MIME type must be JPEG since we forced it
-        results.push(['mime-jpeg', compBlob.type === 'image/jpeg']);
-
-      } catch (err) {
-        console.error('Compressor self-test error', err);
-        results.push(['exception', false]);
-      }
-
-      console.table(results.map(([k, v]) => ({ test: k, pass: !!v })));
-    }
-
-    // Run compressor self-test with a short delay
-    setTimeout(compressorSelfTest, 400);
+    setTimeout(compressorSelfTests, 600);
   </script>
 </body>
 </html>
