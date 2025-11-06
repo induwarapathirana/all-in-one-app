@@ -98,46 +98,48 @@
     <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6 lg:gap-8">
       <div class="glass rounded-3xl p-6 space-y-5">
         <h2 class="text-xl font-bold mb-4">Customize</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label class="block md:col-span-2">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <span class="text-sm text-slate-300">Content / URL</span>
-              <button type="button" id="btnUseCurrentUrl" class="inline-flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-cyan-500/70 hover:text-cyan-200">Use page URL</button>
+        <div class="space-y-4">
+          <label class="block">
+            <div class="flex items-center justify-between gap-3 text-sm text-slate-300">
+              <span>Content / URL</span>
+              <button type="button" id="btnUseCurrentUrl" class="shrink-0 inline-flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-cyan-500/70 hover:text-cyan-200">Use page URL</button>
             </div>
             <textarea id="qrText" class="mt-2 w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-cyan-500 focus:outline-none p-3 leading-relaxed min-h-[110px] resize-none" rows="3" placeholder="Paste text, a URL, or any message for your QR"></textarea>
           </label>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4 md:col-span-2">
+              <label class="block">
+                <span class="text-sm text-slate-300">Size</span>
+                <input id="qrSize" type="number" min="128" max="1024" value="320" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              </label>
+              <label class="block">
+                <span class="text-sm text-slate-300">Margin (px)</span>
+                <input id="qrMargin" type="number" min="0" max="16" value="2" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              </label>
+              <label class="block col-span-2">
+                <span class="text-sm text-slate-300">Error Correction</span>
+                <select id="qrEC" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+                  <option value="L">L (7%)</option>
+                  <option value="M" selected>M (15%)</option>
+                  <option value="Q">Q (25%)</option>
+                  <option value="H">H (30%)</option>
+                </select>
+              </label>
+            </div>
             <label class="block">
-              <span class="text-sm text-slate-300">Size</span>
-              <input id="qrSize" type="number" min="128" max="1024" value="320" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              <span class="text-sm text-slate-300">Foreground</span>
+              <input id="qrFg" type="color" value="#000000" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
             </label>
             <label class="block">
-              <span class="text-sm text-slate-300">Margin (px)</span>
-              <input id="qrMargin" type="number" min="0" max="16" value="2" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              <span class="text-sm text-slate-300">Background</span>
+              <input id="qrBg" type="color" value="#ffffff" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
             </label>
-            <label class="block col-span-2">
-              <span class="text-sm text-slate-300">Error Correction</span>
-              <select id="qrEC" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
-                <option value="L">L (7%)</option>
-                <option value="M" selected>M (15%)</option>
-                <option value="Q">Q (25%)</option>
-                <option value="H">H (30%)</option>
-              </select>
+            <label class="block md:col-span-2">
+              <span class="text-sm text-slate-300">Center Logo (optional)</span>
+              <input id="qrLogo" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
             </label>
           </div>
-          <label class="block">
-            <span class="text-sm text-slate-300">Foreground</span>
-            <input id="qrFg" type="color" value="#000000" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-          </label>
-          <label class="block">
-            <span class="text-sm text-slate-300">Background</span>
-            <input id="qrBg" type="color" value="#ffffff" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-          </label>
-          <label class="block col-span-2">
-            <span class="text-sm text-slate-300">Center Logo (optional)</span>
-            <input id="qrLogo" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
-          </label>
         </div>
         <div class="flex flex-wrap gap-3 mt-6">
           <button id="btnGen" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold text-center">Generate</button>
@@ -157,7 +159,10 @@
       <div class="glass rounded-3xl p-6">
         <h2 class="text-xl font-bold mb-4">Scan with Camera</h2>
         <div id="qr-reader" class="rounded-2xl overflow-hidden"></div>
-        <div class="mt-4 flex gap-3">
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <select id="cameraSelect" class="min-w-[160px] flex-1 rounded-xl bg-slate-900/60 border border-slate-700 p-2 text-sm text-slate-200">
+            <option>Loading cameras…</option>
+          </select>
           <button id="btnScanStart" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Start</button>
           <button id="btnScanStop" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Stop</button>
         </div>
@@ -564,14 +569,65 @@
     let html5QrCode;
     const qrReaderEl = document.getElementById('qr-reader');
     const scanResultEl = document.getElementById('scanResult');
+    const cameraSelect = document.getElementById('cameraSelect');
+    let availableCameras = [];
+    let isScannerRunning = false;
+    let loadingCameras = false;
+
+    async function populateCameras(force = false) {
+      if (!cameraSelect || loadingCameras) return;
+      loadingCameras = true;
+      try {
+        if (force || !availableCameras.length) {
+          availableCameras = await Html5Qrcode.getCameras();
+        }
+        const prevValue = cameraSelect.value;
+        cameraSelect.innerHTML = '';
+        if (!availableCameras.length) {
+          const opt = document.createElement('option');
+          opt.textContent = 'No cameras found';
+          cameraSelect.appendChild(opt);
+          cameraSelect.disabled = true;
+          return;
+        }
+        availableCameras.forEach((cam, idx) => {
+          const opt = document.createElement('option');
+          opt.value = cam.id;
+          opt.textContent = cam.label || `Camera ${idx + 1}`;
+          cameraSelect.appendChild(opt);
+        });
+        cameraSelect.disabled = false;
+        if (prevValue && availableCameras.some(cam => cam.id === prevValue)) {
+          cameraSelect.value = prevValue;
+        } else if (availableCameras[0]) {
+          cameraSelect.value = availableCameras[0].id;
+        }
+      } catch (err) {
+        cameraSelect.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.textContent = 'Camera access blocked';
+        cameraSelect.appendChild(opt);
+        cameraSelect.disabled = true;
+        console.error('Camera list error', err);
+      } finally {
+        loadingCameras = false;
+      }
+    }
+    populateCameras();
+    cameraSelect?.addEventListener('focus', () => populateCameras(true));
 
     async function startScanner() {
       try {
         if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
-        const cams = await Html5Qrcode.getCameras();
-        const camId = cams?.[0]?.id;
+        if (!availableCameras.length || !cameraSelect?.value) await populateCameras(true);
+        const camId = cameraSelect?.value || availableCameras?.[0]?.id;
         if (!camId) throw new Error('No camera found');
+        if (isScannerRunning) {
+          await html5QrCode.stop();
+          isScannerRunning = false;
+        }
         await html5QrCode.start(camId, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure);
+        isScannerRunning = true;
       } catch (e) { alert('Camera error: ' + e.message); }
     }
     function onScanSuccess(decodedText) {
@@ -580,7 +636,17 @@
     function onScanFailure() { /* ignore continuous errors */ }
     document.getElementById('btnScanStart').addEventListener('click', startScanner);
     document.getElementById('btnScanStop').addEventListener('click', async () => {
-      if (html5QrCode) await html5QrCode.stop();
+      if (html5QrCode && isScannerRunning) {
+        await html5QrCode.stop();
+        isScannerRunning = false;
+      }
+    });
+    cameraSelect?.addEventListener('change', async () => {
+      if (html5QrCode && isScannerRunning) {
+        await html5QrCode.stop();
+        isScannerRunning = false;
+        startScanner();
+      }
     });
 
     document.getElementById('scanFile').addEventListener('change', async (e) => {
