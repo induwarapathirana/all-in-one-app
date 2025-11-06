@@ -66,13 +66,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
 </head>
 <body class="min-h-screen">
-  <header class="container mx-auto px-4 py-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
+  <header class="container max-w-6xl mx-auto px-4 py-6">
+    <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3 justify-center sm:justify-start text-center sm:text-left">
         <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center"><span class="text-cyan-300 font-black">QR</span></div>
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">All‑in‑One QR & Image Toolkit</h1>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">All‑in‑One QR & Image Toolkit</h1>
+          <p class="text-sm text-slate-400 mt-1 hidden sm:block">Generate, scan, and edit on any device.</p>
+        </div>
       </div>
-      <div class="hidden md:flex items-center gap-2 text-sm text-slate-300">
+      <div class="flex items-center justify-center sm:justify-end gap-3 text-xs sm:text-sm text-slate-300">
         <a class="underline/30 hover:underline" href="#faq">FAQ</a>
         <span class="opacity-50">•</span>
         <a class="underline/30 hover:underline" href="#privacy">Privacy</a>
@@ -80,25 +83,28 @@
     </div>
   </header>
 
-  <main class="container mx-auto px-4 pb-20">
+  <main class="container max-w-6xl mx-auto px-4 pb-20">
     <!-- Tabs -->
     <div class="glass rounded-3xl p-2 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center font-semibold">QR Generator</button>
-        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">QR Scanner</button>
-        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Background Remover</button>
-        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Compressor</button>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">QR Generator</button>
+        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">QR Scanner</button>
+        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">Background Remover</button>
+        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">Compressor</button>
       </div>
     </div>
 
     <!-- Panels -->
-    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
+    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6 lg:gap-8">
+      <div class="glass rounded-3xl p-6 space-y-5">
         <h2 class="text-xl font-bold mb-4">Customize</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label class="block">
-            <span class="text-sm text-slate-300">Content / URL</span>
-            <textarea id="qrText" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-3" rows="4" placeholder="https://your-link.com"></textarea>
+          <label class="block md:col-span-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-sm text-slate-300">Content / URL</span>
+              <button type="button" id="btnUseCurrentUrl" class="inline-flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-cyan-500/70 hover:text-cyan-200">Use page URL</button>
+            </div>
+            <textarea id="qrText" class="mt-2 w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-cyan-500 focus:outline-none p-3 leading-relaxed min-h-[110px] resize-none" rows="3" placeholder="Paste text, a URL, or any message for your QR"></textarea>
           </label>
           <div class="grid grid-cols-2 gap-4">
             <label class="block">
@@ -133,15 +139,15 @@
             <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
           </label>
         </div>
-        <div class="flex gap-3 mt-6">
-          <button id="btnGen" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Generate</button>
-          <button id="btnDownloadPNG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
-          <button id="btnDownloadSVG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download SVG</button>
+        <div class="flex flex-wrap gap-3 mt-6">
+          <button id="btnGen" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold text-center">Generate</button>
+          <button id="btnDownloadPNG" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-center">Download PNG</button>
+          <button id="btnDownloadSVG" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-center">Download SVG</button>
         </div>
       </div>
       <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center">
         <h3 class="text-lg font-semibold mb-3">Preview</h3>
-        <div id="qrPreview" class="bg-white p-3 rounded-2xl">
+        <div id="qrPreview" class="bg-white/95 p-4 rounded-2xl shadow-inner w-full max-w-xs sm:max-w-sm">
           <!-- QR renders here -->
         </div>
       </div>
@@ -302,7 +308,7 @@
     </section>
   </main>
 
-  <footer class="container mx-auto px-4 py-10 text-center text-slate-400 text-sm">
+  <footer class="container max-w-6xl mx-auto px-4 py-10 text-center text-slate-400 text-sm">
     Built with ❤️ — Frontend‑only MVP. No server required.
   </footer>
 
@@ -476,7 +482,27 @@
     }
 
     const scheduleMakeQR = debounce(() => makeQR(), 180);
-    document.getElementById('qrText').addEventListener('input', scheduleMakeQR);
+    const qrTextArea = document.getElementById('qrText');
+    if (qrTextArea) {
+      const autoGrow = () => {
+        qrTextArea.style.height = 'auto';
+        qrTextArea.style.height = Math.min(qrTextArea.scrollHeight, 320) + 'px';
+      };
+      ['input', 'change'].forEach(evt => qrTextArea.addEventListener(evt, autoGrow));
+      qrTextArea.addEventListener('input', scheduleMakeQR);
+      autoGrow();
+    }
+
+    const useCurrentUrlBtn = document.getElementById('btnUseCurrentUrl');
+    if (useCurrentUrlBtn && qrTextArea) {
+      useCurrentUrlBtn.addEventListener('click', () => {
+        qrTextArea.value = window.location.href;
+        qrTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+        qrTextArea.focus();
+        const end = qrTextArea.value.length;
+        qrTextArea.setSelectionRange(end, end);
+      });
+    }
     ['qrSize', 'qrMargin'].forEach(id => {
       const el = document.getElementById(id);
       el.addEventListener('input', scheduleMakeQR);
@@ -817,7 +843,10 @@
         const backend = await ensureQrLib();
         results.push(['lib-loaded', backend === 'qrcodejs' || backend === 'qrcode-module']);
         // Test 1: basic QR render
-        document.getElementById('qrText').value = 'test://qr';
+        if (qrTextArea) {
+          qrTextArea.value = 'test://qr';
+          qrTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
         await makeQR();
         let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
         results.push(['qr-rendered', !!el]);
