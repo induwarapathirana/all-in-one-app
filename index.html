@@ -54,6 +54,7 @@
                         linear-gradient(-45deg, transparent 75%, #94a3b822 75%);
       background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0;
     }
+    #qrPreview canvas, #qrPreview img { width: 100%; height: auto; max-width: min(100%, 420px); display: block; }
     /* Prevent iOS zoom on inputs */
     input, select { font-size: 16px; }
   </style>
@@ -65,13 +66,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
 </head>
 <body class="min-h-screen">
-  <header class="container mx-auto px-4 py-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
+  <header class="container max-w-6xl mx-auto px-4 py-6">
+    <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3 justify-center sm:justify-start text-center sm:text-left">
         <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center"><span class="text-cyan-300 font-black">QR</span></div>
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">All‑in‑One QR & Image Toolkit</h1>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">All‑in‑One QR & Image Toolkit</h1>
+          <p class="text-sm text-slate-400 mt-1 hidden sm:block">Generate, scan, and edit on any device.</p>
+        </div>
       </div>
-      <div class="hidden md:flex items-center gap-2 text-sm text-slate-300">
+      <div class="flex items-center justify-center sm:justify-end gap-3 text-xs sm:text-sm text-slate-300">
         <a class="underline/30 hover:underline" href="#faq">FAQ</a>
         <span class="opacity-50">•</span>
         <a class="underline/30 hover:underline" href="#privacy">Privacy</a>
@@ -79,25 +83,28 @@
     </div>
   </header>
 
-  <main class="container mx-auto px-4 pb-20">
+  <main class="container max-w-6xl mx-auto px-4 pb-20">
     <!-- Tabs -->
     <div class="glass rounded-3xl p-2 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center font-semibold">QR Generator</button>
-        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">QR Scanner</button>
-        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Background Remover</button>
-        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Compressor</button>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">QR Generator</button>
+        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">QR Scanner</button>
+        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">Background Remover</button>
+        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">Compressor</button>
       </div>
     </div>
 
     <!-- Panels -->
-    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
+    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6 lg:gap-8">
+      <div class="glass rounded-3xl p-6 space-y-5">
         <h2 class="text-xl font-bold mb-4">Customize</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label class="block">
-            <span class="text-sm text-slate-300">Content / URL</span>
-            <textarea id="qrText" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-3" rows="4" placeholder="https://your-link.com"></textarea>
+          <label class="block md:col-span-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-sm text-slate-300">Content / URL</span>
+              <button type="button" id="btnUseCurrentUrl" class="inline-flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-cyan-500/70 hover:text-cyan-200">Use page URL</button>
+            </div>
+            <textarea id="qrText" class="mt-2 w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-cyan-500 focus:outline-none p-3 leading-relaxed min-h-[110px] resize-none" rows="3" placeholder="Paste text, a URL, or any message for your QR"></textarea>
           </label>
           <div class="grid grid-cols-2 gap-4">
             <label class="block">
@@ -132,15 +139,15 @@
             <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
           </label>
         </div>
-        <div class="flex gap-3 mt-6">
-          <button id="btnGen" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Generate</button>
-          <button id="btnDownloadPNG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
-          <button id="btnDownloadSVG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download SVG</button>
+        <div class="flex flex-wrap gap-3 mt-6">
+          <button id="btnGen" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold text-center">Generate</button>
+          <button id="btnDownloadPNG" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-center">Download PNG</button>
+          <button id="btnDownloadSVG" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-center">Download SVG</button>
         </div>
       </div>
       <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center">
         <h3 class="text-lg font-semibold mb-3">Preview</h3>
-        <div id="qrPreview" class="bg-white p-3 rounded-2xl">
+        <div id="qrPreview" class="bg-white/95 p-4 rounded-2xl shadow-inner w-full max-w-xs sm:max-w-sm">
           <!-- QR renders here -->
         </div>
       </div>
@@ -180,6 +187,18 @@
             <input id="chromaColor" type="color" value="#00ff00" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
             <label class="text-sm text-slate-300 block mt-3">Tolerance</label>
             <input id="chromaTol" type="range" min="5" max="80" value="18" class="w-full" />
+          </div>
+          <div id="personOptions" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-slate-300 flex items-center justify-between">Foreground Confidence <span id="personConfidenceVal" class="text-xs text-slate-400">55%</span></label>
+              <input id="personConfidence" type="range" min="35" max="90" value="55" class="w-full" />
+              <p class="text-xs text-slate-400 mt-1">Lower if parts of the subject disappear; raise to clean halos.</p>
+            </div>
+            <div>
+              <label class="text-sm text-slate-300 flex items-center justify-between">Edge Smoothness <span id="personFeatherVal" class="text-xs text-slate-400">2</span></label>
+              <input id="personFeather" type="range" min="0" max="5" value="2" class="w-full" />
+              <p class="text-xs text-slate-400 mt-1">Higher values soften edges and close tiny gaps.</p>
+            </div>
           </div>
         </div>
         <div class="flex gap-3 mt-6">
@@ -289,7 +308,7 @@
     </section>
   </main>
 
-  <footer class="container mx-auto px-4 py-10 text-center text-slate-400 text-sm">
+  <footer class="container max-w-6xl mx-auto px-4 py-10 text-center text-slate-400 text-sm">
     Built with ❤️ — Frontend‑only MVP. No server required.
   </footer>
 
@@ -306,6 +325,9 @@
 
     // ---------- QR GENERATOR
     let qr; const qrDiv = document.getElementById('qrPreview');
+    let lastLogoFile = null;
+    let lastLogoDataUrl = null;
+    let logoRenderToken = 0;
 
     async function ensureQrLib(){
       // Prefer classic qrcodejs global (QRCode)
@@ -340,6 +362,14 @@
       }
 
       throw new Error('No QR library could be loaded (network/CSP?)');
+    }
+
+    function debounce(fn, wait = 180) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+      };
     }
 
     async function makeQR() {
@@ -379,8 +409,10 @@
 
       // Choice 3A — Auto-convert <img> → <canvas> when a logo is selected,
       // then draw a rounded (A) logo on top.
-      let file = document.getElementById('qrLogo').files?.[0];
       if (!canvasEl) return;
+      const logoInput = document.getElementById('qrLogo');
+      const file = logoInput?.files?.[0];
+      const callId = ++logoRenderToken;
 
       // If the QR output is an <img> and a logo is chosen, convert to canvas first
       if (file && canvasEl.tagName !== 'CANVAS') {
@@ -397,21 +429,23 @@
         canvasEl = c;
       }
 
-      // If no logo file, we are done
-      if (!file) return;
+      if (!file) {
+        lastLogoFile = null;
+        lastLogoDataUrl = null;
+        return;
+      }
 
-      // Draw rounded logo with white pad
-      const reader = new FileReader();
-      reader.onload = () => {
+      const drawLogo = (dataUrl) => {
         const logo = new Image();
         logo.onload = () => {
+          if (callId !== logoRenderToken) return;
           if (!canvasEl || canvasEl.tagName !== 'CANVAS') return; // safety
           const ctx = canvasEl.getContext('2d');
           const s = Math.min(canvasEl.width, canvasEl.height);
           const target = Math.floor(s * 0.2); // 20%
           const x = (canvasEl.width - target) / 2;
           const y = (canvasEl.height - target) / 2;
-          const r = 12;
+          const r = Math.max(8, Math.floor(target * 0.18));
           ctx.save();
           ctx.fillStyle = '#ffffffcc';
           roundRect(ctx, x - 8, y - 8, target + 16, target + 16, r);
@@ -419,9 +453,22 @@
           ctx.restore();
           ctx.drawImage(logo, x, y, target, target);
         };
-        logo.src = reader.result;
+        logo.src = dataUrl;
       };
-      reader.readAsDataURL(file);
+
+      if (file === lastLogoFile && lastLogoDataUrl) {
+        drawLogo(lastLogoDataUrl);
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (callId !== logoRenderToken) return;
+          lastLogoFile = file;
+          lastLogoDataUrl = reader.result;
+          drawLogo(reader.result);
+        };
+        reader.onerror = () => console.warn('Logo load failed');
+        reader.readAsDataURL(file);
+      }
     }
 
     function roundRect(ctx, x, y, w, h, r) {
@@ -433,6 +480,44 @@
       ctx.arcTo(x, y, x + w, y, r);
       ctx.closePath();
     }
+
+    const scheduleMakeQR = debounce(() => makeQR(), 180);
+    const qrTextArea = document.getElementById('qrText');
+    if (qrTextArea) {
+      const autoGrow = () => {
+        qrTextArea.style.height = 'auto';
+        qrTextArea.style.height = Math.min(qrTextArea.scrollHeight, 320) + 'px';
+      };
+      ['input', 'change'].forEach(evt => qrTextArea.addEventListener(evt, autoGrow));
+      qrTextArea.addEventListener('input', scheduleMakeQR);
+      autoGrow();
+    }
+
+    const useCurrentUrlBtn = document.getElementById('btnUseCurrentUrl');
+    if (useCurrentUrlBtn && qrTextArea) {
+      useCurrentUrlBtn.addEventListener('click', () => {
+        qrTextArea.value = window.location.href;
+        qrTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+        qrTextArea.focus();
+        const end = qrTextArea.value.length;
+        qrTextArea.setSelectionRange(end, end);
+      });
+    }
+    ['qrSize', 'qrMargin'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', scheduleMakeQR);
+      el.addEventListener('change', scheduleMakeQR);
+    });
+    ['qrEC', 'qrFg', 'qrBg'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('change', scheduleMakeQR);
+      if (el.type === 'color') el.addEventListener('input', scheduleMakeQR);
+    });
+    document.getElementById('qrLogo').addEventListener('change', () => {
+      lastLogoFile = null;
+      lastLogoDataUrl = null;
+      makeQR();
+    });
 
     document.getElementById('btnGen').addEventListener('click', () => makeQR());
     // initial render (non-blocking)
@@ -518,22 +603,61 @@
     const chromaOptions = document.getElementById('chromaOptions');
     const chromaColor = document.getElementById('chromaColor');
     const chromaTol = document.getElementById('chromaTol');
+    const personOptions = document.getElementById('personOptions');
+    const personConfidence = document.getElementById('personConfidence');
+    const personConfidenceVal = document.getElementById('personConfidenceVal');
+    const personFeather = document.getElementById('personFeather');
+    const personFeatherVal = document.getElementById('personFeatherVal');
+
+    function syncPersonControls() {
+      if (personConfidenceVal) personConfidenceVal.textContent = `${personConfidence.value}%`;
+      if (personFeatherVal) personFeatherVal.textContent = personFeather.value;
+    }
 
     bgModeSel.addEventListener('change', () => {
       chromaOptions.classList.toggle('hidden', bgModeSel.value !== 'chroma');
+      personOptions.classList.toggle('hidden', bgModeSel.value !== 'auto-person');
+      if (bgModeSel.value === 'auto-person') {
+        syncPersonControls();
+        if (sourceImg) applyPersonMask();
+      }
     });
+    syncPersonControls();
 
     let sourceImg;
+    let basePersonMask = null;
+    let baseMaskW = 0;
+    let baseMaskH = 0;
+    let selfieInstance;
+    let segInFlight = false;
+    const segTmpCanvas = document.createElement('canvas');
+    const segTmpCtx = segTmpCanvas.getContext('2d');
+    const personMaskCanvas = document.createElement('canvas');
+    const personMaskCtx = personMaskCanvas.getContext('2d');
     document.getElementById('bgFile').addEventListener('change', (e) => {
       const f = e.target.files?.[0];
       if (!f) return;
       const reader = new FileReader();
       reader.onload = () => {
         const img = new Image();
-        img.onload = () => { sourceImg = img; drawInput(img); };
+        img.onload = () => {
+          sourceImg = img;
+          drawInput(img);
+          basePersonMask = null;
+          baseMaskW = baseMaskH = 0;
+        };
         img.src = reader.result;
       };
       reader.readAsDataURL(f);
+    });
+
+    personConfidence?.addEventListener('input', () => {
+      syncPersonControls();
+      applyPersonMask();
+    });
+    personFeather?.addEventListener('input', () => {
+      syncPersonControls();
+      applyPersonMask();
     });
 
     function drawInput(img) {
@@ -551,7 +675,7 @@
       if (bgModeSel.value === 'chroma') {
         chromaKey();
       } else {
-        await personCutout();
+        await personCutout(true);
       }
     }
 
@@ -564,42 +688,142 @@
 
     function chromaKey() {
       const w = inC.width, h = inC.height;
+      if (!w || !h) return;
       const src = inCtx.getImageData(0,0,w,h);
       const dst = outCtx.createImageData(w,h);
       const [rT,gT,bT] = hexToRgb(chromaColor.value);
       const tol = parseInt(chromaTol.value,10);
-      for (let i=0;i<src.data.length;i+=4){
+      const softness = Math.max(12, tol * 1.35);
+      const alphaMask = new Float32Array(w*h);
+      for (let i=0,j=0;i<src.data.length;i+=4,j++){
         const r=src.data[i], g=src.data[i+1], b=src.data[i+2], a=src.data[i+3];
         const dist = Math.sqrt((r-rT)**2 + (g-gT)**2 + (b-bT)**2);
-        const keep = dist > tol * 3; // rough mapping
-        dst.data[i] = r; dst.data[i+1] = g; dst.data[i+2] = b; dst.data[i+3] = keep ? a : 0;
+        let alpha = (dist - tol) / softness;
+        alpha = Math.max(0, Math.min(1, alpha));
+        alphaMask[j] = alpha * (a / 255);
+        dst.data[i] = r; dst.data[i+1] = g; dst.data[i+2] = b;
+      }
+      const smoothPasses = Math.max(0, Math.round(tol / 25));
+      if (smoothPasses > 0) smoothAlpha(alphaMask, w, h, smoothPasses);
+      for (let i=0,j=0;i<dst.data.length;i+=4,j++){
+        dst.data[i+3] = Math.round(alphaMask[j] * 255);
       }
       outCtx.putImageData(dst,0,0);
     }
 
-    async function personCutout() {
-      // Uses Mediapipe SelfieSegmentation (person only)
+    function smoothAlpha(alpha, width, height, iterations = 1) {
+      if (!iterations) return alpha;
+      const tmp = new Float32Array(alpha.length);
+      for (let iter = 0; iter < iterations; iter++) {
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            let sum = 0;
+            let count = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = y + dy;
+              if (ny < 0 || ny >= height) continue;
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = x + dx;
+                if (nx < 0 || nx >= width) continue;
+                sum += alpha[ny * width + nx];
+                count++;
+              }
+            }
+            tmp[y * width + x] = count ? sum / count : alpha[y * width + x];
+          }
+        }
+        alpha.set(tmp);
+      }
+      return alpha;
+    }
+
+    function applyPersonMask() {
+      if (!basePersonMask || !baseMaskW || !baseMaskH) {
+        if (!segInFlight && sourceImg && bgModeSel.value === 'auto-person') personCutout(true);
+        return;
+      }
+      const w = baseMaskW;
+      const h = baseMaskH;
+      const threshold = (parseInt(personConfidence?.value || '55', 10) || 55) / 100;
+      const featherPasses = parseInt(personFeather?.value || '0', 10) || 0;
+      const working = basePersonMask.slice();
+      const denom = Math.max(0.0001, 1 - threshold);
+      for (let i = 0; i < working.length; i++) {
+        let val = (working[i] - threshold) / denom;
+        working[i] = Math.min(1, Math.max(0, val));
+      }
+      if (featherPasses > 0) smoothAlpha(working, w, h, featherPasses * 2);
+
+      personMaskCanvas.width = w;
+      personMaskCanvas.height = h;
+      const maskData = personMaskCtx.createImageData(w, h);
+      for (let i = 0, j = 0; i < maskData.data.length; i += 4, j++) {
+        const alpha = Math.round(working[j] * 255);
+        maskData.data[i] = 255;
+        maskData.data[i + 1] = 255;
+        maskData.data[i + 2] = 255;
+        maskData.data[i + 3] = alpha;
+      }
+      personMaskCtx.putImageData(maskData, 0, 0);
+
+      outCtx.clearRect(0, 0, w, h);
+      outCtx.drawImage(inC, 0, 0, w, h);
+      outCtx.globalCompositeOperation = 'destination-in';
+      outCtx.drawImage(personMaskCanvas, 0, 0, w, h);
+      outCtx.globalCompositeOperation = 'source-over';
+    }
+
+    async function personCutout(forceRefresh = true) {
+      if (!sourceImg) return;
       const w = inC.width, h = inC.height;
-      const selfie = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
-      selfie.setOptions({ modelSelection: 1 }); // 0: landscape, 1: general
-      await new Promise(resolve => {
-        selfie.onResults((res) => {
-          const mask = res.segmentationMask; // HTMLCanvasElement
-          // Compose: keep person (white) remove background (black)
-          const tmp = document.createElement('canvas'); tmp.width=w; tmp.height=h;
-          const tctx = tmp.getContext('2d');
-          tctx.drawImage(inC,0,0,w,h);
-          // Use mask as alpha
-          outCtx.clearRect(0,0,w,h);
-          outCtx.save();
-          outCtx.drawImage(mask,0,0,w,h);
-          outCtx.globalCompositeOperation = 'source-in';
-          outCtx.drawImage(inC,0,0,w,h);
-          outCtx.restore();
+      if (!w || !h) return;
+      if (!forceRefresh && basePersonMask && baseMaskW === w && baseMaskH === h) {
+        applyPersonMask();
+        return;
+      }
+      if (segInFlight) return;
+      if (!selfieInstance) {
+        selfieInstance = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
+        selfieInstance.setOptions({ modelSelection: 1 });
+      }
+      segInFlight = true;
+      await new Promise((resolve) => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          segInFlight = false;
           resolve();
+        };
+        selfieInstance.onResults((res) => {
+          try {
+            segTmpCanvas.width = w;
+            segTmpCanvas.height = h;
+            segTmpCtx.clearRect(0, 0, w, h);
+            segTmpCtx.drawImage(res.segmentationMask, 0, 0, w, h);
+            const data = segTmpCtx.getImageData(0, 0, w, h).data;
+            basePersonMask = new Float32Array(w * h);
+            for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+              basePersonMask[j] = data[i] / 255;
+            }
+            baseMaskW = w;
+            baseMaskH = h;
+            applyPersonMask();
+          } finally {
+            finish();
+          }
         });
-        // Convert the current canvas to an image and send to Mediapipe as if it were a video frame
-        const img = new Image(); img.onload = () => selfie.send({ image: img });
+        const img = new Image();
+        img.onload = () => {
+          selfieInstance.send({ image: img }).catch((err) => {
+            console.error('SelfieSegmentation send failed', err);
+            finish();
+          });
+        };
+        img.onerror = (err) => {
+          console.error('Segmentation image load failed', err);
+          finish();
+        };
         img.src = inC.toDataURL('image/png');
       });
     }
@@ -619,7 +843,10 @@
         const backend = await ensureQrLib();
         results.push(['lib-loaded', backend === 'qrcodejs' || backend === 'qrcode-module']);
         // Test 1: basic QR render
-        document.getElementById('qrText').value = 'test://qr';
+        if (qrTextArea) {
+          qrTextArea.value = 'test://qr';
+          qrTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
         await makeQR();
         let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
         results.push(['qr-rendered', !!el]);
