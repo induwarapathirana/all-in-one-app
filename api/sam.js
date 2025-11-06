@@ -39,7 +39,10 @@ export default async function handler(req, res) {
       buffer = Buffer.from(imagePayload, "base64");
     }
 
-    const hfResp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+    const baseUrl = (process.env.HUGGINGFACE_API_BASE || "https://router.huggingface.co/hf-inference").replace(/\/?$/, "");
+    const target = `${baseUrl}/models/${encodeURIComponent(model)}`;
+
+    const hfResp = await fetch(target, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
