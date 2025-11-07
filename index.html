@@ -35,24 +35,226 @@
   <!-- AdSense (replace ca-pub-########### below when approved) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1909319391447068" crossorigin="anonymous"></script>
 
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('aoi-theme');
+        const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      } catch (err) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #0b1220; --card: #0f172a; --muted: #94a3b8; }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: radial-gradient(1200px 600px at 80% -100px, #1e293b 10%, transparent 50%), radial-gradient(900px 500px at -15% 0%, #0ea5e9 0%, transparent 60%), var(--bg); color: #e2e8f0; }
-    .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); box-shadow: 0 10px 30px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(10px); }
-    .tab-active { background: #111827; border-color: #374151; }
-    .grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .hidden-input { opacity:0; position:absolute; left:-9999px; }
-    .srchighlight { box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 10px 20px rgba(14,165,233,.25); }
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: rgba(15, 23, 42, 0.08);
+      --muted: #475569;
+      --text: #0f172a;
+      --accent: #0ea5e9;
+      --accent-strong: #0284c7;
+      --shadow: 0 28px 48px rgba(15, 23, 42, 0.08);
+      --radius-xl: 1.5rem;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --surface: #111827;
+      --surface-soft: rgba(30, 41, 59, 0.65);
+      --border: rgba(148, 163, 184, 0.22);
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --accent: #22d3ee;
+      --accent-strong: #0ea5e9;
+      --shadow: 0 32px 60px rgba(2, 6, 23, 0.55);
+    }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    a { color: inherit; }
+    .glass {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .tab-btn {
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+      border: 1px solid transparent;
+      width: 100%;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: var(--surface-soft);
+    }
+    .tab-active {
+      background: var(--surface-soft);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+    :root[data-theme="dark"] .tab-active {
+      box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
+    }
+    .panel { align-content: flex-start; }
+    .section-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .text-muted { color: var(--muted); }
+    .quick-action {
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+      border-radius: 0.75rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      transition: background 0.2s ease, border 0.2s ease, color 0.2s ease;
+      cursor: pointer;
+    }
+    .quick-action:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+      color: var(--accent-strong);
+    }
+    .form-field {
+      width: 100%;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 0.85rem;
+      padding: 0.7rem 0.85rem;
+      transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .form-field:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25);
+      background: var(--surface);
+    }
+    .form-field[disabled] {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    input[type="color"].form-field { padding: 0.2rem; height: 44px; }
+    input[type="file"].form-field { padding: 0.5rem 0.85rem; }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+      border-radius: 0.85rem;
+      font-weight: 600;
+      padding: 0.65rem 1.1rem;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary {
+      background: var(--accent-strong);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25);
+    }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-secondary {
+      background: var(--surface-soft);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--surface); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { background: var(--surface-soft); }
+    .brand-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 1.25rem;
+      background: var(--surface-soft);
+      color: var(--accent-strong);
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
     .checker {
-      background-image: linear-gradient(45deg, #94a3b822 25%, transparent 25%),
-                        linear-gradient(-45deg, #94a3b822 25%, transparent 25%),
-                        linear-gradient(45deg, transparent 75%, #94a3b822 75%),
-                        linear-gradient(-45deg, transparent 75%, #94a3b822 75%);
-      background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      background-image: linear-gradient(45deg, rgba(148, 163, 184, 0.25) 25%, transparent 25%),
+                        linear-gradient(-45deg, rgba(148, 163, 184, 0.25) 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.25) 75%),
+                        linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.25) 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+    }
+    #qrPreview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    #qrPreview canvas, #qrPreview img {
+      width: 100%;
+      max-width: 360px;
+      height: auto;
+    }
+    .panel-highlight {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+    .panel-highlight a { color: var(--accent-strong); }
+    .srchighlight { box-shadow: none; }
+    .theme-icon {
+      display: inline-flex;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .theme-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    :root[data-theme="light"] .theme-icon-moon { display: none; }
+    :root[data-theme="dark"] .theme-icon-sun { display: none; }
+    small, .hint { color: var(--muted); }
+    footer, #privacy { color: var(--muted); }
+    @media (max-width: 640px) {
+      .tab-btn { font-size: 0.9rem; }
+      #qrPreview { padding: 1rem; }
     }
     /* Prevent iOS zoom on inputs */
     input, select { font-size: 16px; }
@@ -64,140 +266,315 @@
   <!-- Mediapipe Selfie Segmentation (for person-background removal) -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
 </head>
-<body class="min-h-screen">
-  <header class="container mx-auto px-4 py-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center"><span class="text-cyan-300 font-black">QR</span></div>
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">All‑in‑One QR & Image Toolkit</h1>
+<body class="min-h-screen antialiased">
+  <header class="container max-w-6xl mx-auto px-4 py-8">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-4 justify-center sm:justify-start text-center sm:text-left">
+        <div class="brand-icon">QR</div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">All‑in‑One QR &amp; Image Toolkit</h1>
+          <p class="text-sm text-muted mt-1 hidden sm:block">Generate, scan, and edit on any device.</p>
+        </div>
       </div>
-      <div class="hidden md:flex items-center gap-2 text-sm text-slate-300">
-        <a class="underline/30 hover:underline" href="#faq">FAQ</a>
-        <span class="opacity-50">•</span>
-        <a class="underline/30 hover:underline" href="#privacy">Privacy</a>
+      <div class="flex items-center justify-center sm:justify-end gap-3 text-sm text-muted">
+        <nav class="flex items-center gap-3">
+          <a class="hover:underline" href="#faq">FAQ</a>
+          <span aria-hidden="true">•</span>
+          <a class="hover:underline" href="#privacy">Privacy</a>
+        </nav>
+        <button id="themeToggle" type="button" class="btn btn-ghost text-sm" aria-label="Toggle color theme">
+          <span class="theme-icon theme-icon-sun" aria-hidden="true">☀️</span>
+          <span class="theme-icon theme-icon-moon" aria-hidden="true">🌙</span>
+          <span class="hidden sm:inline theme-label">Light mode</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="container mx-auto px-4 pb-20">
+  <main class="container max-w-6xl mx-auto px-4 pb-20">
     <!-- Tabs -->
-    <div class="glass rounded-3xl p-2 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center font-semibold">QR Generator</button>
-        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">QR Scanner</button>
-        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Background Remover</button>
-        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Compressor</button>
+    <div class="glass p-2 mb-8">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button data-tab="gen" class="tab-btn tab-active">QR Generator</button>
+        <button data-tab="scan" class="tab-btn">QR Scanner</button>
+        <button data-tab="bg" class="tab-btn">Background Remover</button>
+        <button data-tab="comp" class="tab-btn">Compressor</button>
       </div>
     </div>
 
     <!-- Panels -->
-    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Customize</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label class="block">
-            <span class="text-sm text-slate-300">Content / URL</span>
-            <textarea id="qrText" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-3" rows="4" placeholder="https://your-link.com"></textarea>
-          </label>
-          <div class="grid grid-cols-2 gap-4">
+    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6 lg:gap-8">
+      <div class="glass p-6 space-y-6">
+        <h2 class="section-heading">Customize</h2>
+        <div class="space-y-6">
+          <div class="grid gap-4">
             <label class="block">
-              <span class="text-sm text-slate-300">Size</span>
-              <input id="qrSize" type="number" min="128" max="1024" value="320" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            </label>
-            <label class="block">
-              <span class="text-sm text-slate-300">Margin (px)</span>
-              <input id="qrMargin" type="number" min="0" max="16" value="2" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            </label>
-            <label class="block col-span-2">
-              <span class="text-sm text-slate-300">Error Correction</span>
-              <select id="qrEC" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
-                <option value="L">L (7%)</option>
-                <option value="M" selected>M (15%)</option>
-                <option value="Q">Q (25%)</option>
-                <option value="H">H (30%)</option>
+              <span class="text-sm text-muted">QR Type</span>
+              <select id="qrType" class="form-field mt-1" data-qr-input>
+                <option value="url" selected>Link / Text</option>
+                <option value="wifi">Wi‑Fi</option>
+                <option value="email">Email</option>
+                <option value="sms">SMS</option>
+                <option value="phone">Phone</option>
               </select>
             </label>
           </div>
-          <label class="block">
-            <span class="text-sm text-slate-300">Foreground</span>
-            <input id="qrFg" type="color" value="#000000" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-          </label>
-          <label class="block">
-            <span class="text-sm text-slate-300">Background</span>
-            <input id="qrBg" type="color" value="#ffffff" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-          </label>
-          <label class="block col-span-2">
-            <span class="text-sm text-slate-300">Center Logo (optional)</span>
-            <input id="qrLogo" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
-          </label>
+          <div id="qrTypeFields" class="space-y-5">
+            <div class="qr-type-group space-y-3" data-type="url">
+              <label class="block">
+                <div class="flex items-center justify-between gap-3 text-sm text-muted">
+                  <span>Content / URL</span>
+                  <button type="button" id="btnUseCurrentUrl" class="quick-action text-xs sm:text-sm">Use page URL</button>
+                </div>
+                <textarea id="qrText" class="form-field mt-2 leading-relaxed min-h-[110px] resize-none" rows="3" placeholder="Paste text, a URL, or any message for your QR" data-qr-input></textarea>
+              </label>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="wifi">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="block">
+                  <span class="text-sm text-muted">Network Name (SSID)</span>
+                  <input id="qrWifiSsid" type="text" class="form-field mt-1" placeholder="CafeWiFi" data-qr-input />
+                </label>
+                <label class="block">
+                  <span class="text-sm text-muted">Security</span>
+                  <select id="qrWifiSecurity" class="form-field mt-1" data-qr-input>
+                    <option value="WPA" selected>WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">None</option>
+                  </select>
+                </label>
+                <label class="block" data-wifi-pass>
+                  <span class="text-sm text-muted">Password</span>
+                  <input id="qrWifiPassword" type="text" class="form-field mt-1" placeholder="password" data-qr-input />
+                </label>
+                <label class="flex items-center gap-2 text-sm text-muted">
+                  <input id="qrWifiHidden" type="checkbox" class="h-4 w-4" data-qr-input />
+                  <span>Hidden network</span>
+                </label>
+              </div>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="email">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">To</span>
+                  <input id="qrEmailTo" type="email" class="form-field mt-1" placeholder="hello@example.com" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">Subject</span>
+                  <input id="qrEmailSubject" type="text" class="form-field mt-1" placeholder="Let's connect" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">Message</span>
+                  <textarea id="qrEmailBody" class="form-field mt-1 min-h-[100px] resize-none" rows="3" placeholder="Hi there…" data-qr-input></textarea>
+                </label>
+              </div>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="sms">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="block">
+                  <span class="text-sm text-muted">Phone Number</span>
+                  <input id="qrSmsNumber" type="tel" class="form-field mt-1" placeholder="1234567890" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">Message</span>
+                  <textarea id="qrSmsMessage" class="form-field mt-1 min-h-[80px] resize-none" rows="3" placeholder="Let's chat soon" data-qr-input></textarea>
+                </label>
+              </div>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="phone">
+              <label class="block">
+                <span class="text-sm text-muted">Phone Number</span>
+                <input id="qrPhoneNumber" type="tel" class="form-field mt-1" placeholder="1234567890" data-qr-input />
+              </label>
+            </div>
+          </div>
+          <div class="space-y-4 pt-2 border-t border-[color:var(--border)]">
+            <h3 class="text-sm font-semibold uppercase tracking-wide text-muted">Design</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-sm text-muted">Size</span>
+                <input id="qrSize" type="number" min="128" max="1024" value="320" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Margin (px)</span>
+                <input id="qrMargin" type="number" min="0" max="24" value="2" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Error Correction</span>
+                <select id="qrEC" class="form-field mt-1" data-qr-input>
+                  <option value="L">L (7%)</option>
+                  <option value="M" selected>M (15%)</option>
+                  <option value="Q">Q (25%)</option>
+                  <option value="H">H (30%)</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Module Style</span>
+                <select id="qrDotStyle" class="form-field mt-1" data-qr-input>
+                  <option value="square">Square</option>
+                  <option value="rounded">Rounded</option>
+                  <option value="dots">Dots</option>
+                  <option value="classy">Classy</option>
+                  <option value="classy-rounded">Classy Rounded</option>
+                  <option value="extra-rounded">Extra Rounded</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Square Style</span>
+                <select id="qrCornerSquareStyle" class="form-field mt-1" data-qr-input>
+                  <option value="square">Square</option>
+                  <option value="extra-rounded">Extra Rounded</option>
+                  <option value="rounded">Rounded</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Dot Style</span>
+                <select id="qrCornerDotStyle" class="form-field mt-1" data-qr-input>
+                  <option value="square">Square</option>
+                  <option value="dot">Dot</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Module Color</span>
+                <div class="grid grid-cols-[auto,1fr] gap-2 items-center mt-1">
+                  <input id="qrFg" type="color" value="#000000" class="form-field p-0 h-11" data-qr-input />
+                  <select id="qrFgMode" class="form-field" data-qr-input>
+                    <option value="solid" selected>Solid</option>
+                    <option value="gradient">Linear Gradient</option>
+                  </select>
+                </div>
+              </label>
+              <div id="qrGradientOpts" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="block">
+                  <span class="text-sm text-muted">Second Color</span>
+                  <input id="qrFgAlt" type="color" value="#0ea5e9" class="form-field mt-1" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted flex items-center justify-between">Angle <span id="qrGradientAngleVal" class="text-xs text-muted">45°</span></span>
+                  <input id="qrGradientAngle" type="range" min="0" max="360" value="45" data-qr-input />
+                </label>
+              </div>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Color</span>
+                <input id="qrCornerColor" type="color" value="#0f9d58" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Dot Color</span>
+                <input id="qrCornerDotColor" type="color" value="#0f9d58" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Background</span>
+                <input id="qrBg" type="color" value="#ffffff" class="form-field mt-1" data-qr-input />
+              </label>
+            </div>
+            <div class="space-y-4">
+              <label class="block">
+                <span class="text-sm text-muted">Center Logo (optional)</span>
+                <input id="qrLogo" type="file" accept="image/*" class="form-field mt-1" data-qr-input />
+                <small class="block mt-2 text-xs text-muted">Tip: choose H-level error correction when adding logos so the code stays readable.</small>
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="block">
+                  <span class="text-sm text-muted flex items-center justify-between">Logo Size <span id="qrLogoScaleLabel" class="text-xs text-muted">22%</span></span>
+                  <input id="qrLogoScale" type="range" min="0.15" max="0.35" step="0.01" value="0.22" data-qr-input />
+                </label>
+                <label class="block">
+                  <span class="text-sm text-muted flex items-center justify-between">Logo Margin <span id="qrLogoMarginLabel" class="text-xs text-muted">6px</span></span>
+                  <input id="qrLogoMargin" type="range" min="0" max="24" step="1" value="6" data-qr-input />
+                </label>
+                <label class="flex items-center gap-3 text-sm text-muted">
+                  <input id="qrLogoHideDots" type="checkbox" class="h-4 w-4" data-qr-input />
+                  <span>Hide dots behind logo</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="flex gap-3 mt-6">
-          <button id="btnGen" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Generate</button>
-          <button id="btnDownloadPNG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
-          <button id="btnDownloadSVG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download SVG</button>
+        <div class="flex flex-wrap gap-3">
+          <button id="btnGen" class="btn btn-primary flex-1 min-w-[140px]">Generate</button>
+          <button id="btnDownloadPNG" class="btn btn-secondary flex-1 min-w-[140px]">Download PNG</button>
+          <button id="btnDownloadSVG" class="btn btn-secondary flex-1 min-w-[140px]">Download SVG</button>
         </div>
       </div>
-      <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center">
-        <h3 class="text-lg font-semibold mb-3">Preview</h3>
-        <div id="qrPreview" class="bg-white p-3 rounded-2xl">
+      <div class="glass p-6 flex flex-col items-center justify-center text-center gap-4">
+        <h3 class="text-lg font-semibold">Preview</h3>
+        <div id="qrPreview" class="w-full max-w-xs sm:max-w-sm">
           <!-- QR renders here -->
         </div>
       </div>
     </section>
 
     <section id="panel-scan" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Scan with Camera</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Scan with Camera</h2>
         <div id="qr-reader" class="rounded-2xl overflow-hidden"></div>
-        <div class="mt-4 flex gap-3">
-          <button id="btnScanStart" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Start</button>
-          <button id="btnScanStop" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Stop</button>
+        <div class="flex flex-wrap items-center gap-3">
+          <select id="cameraSelect" class="form-field min-w-[160px] flex-1">
+            <option>Loading cameras…</option>
+          </select>
+          <button id="btnScanStart" class="btn btn-primary">Start</button>
+          <button id="btnScanStop" class="btn btn-secondary">Stop</button>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Permission prompt will appear the first time. Works best in good lighting.</p>
+        <p class="text-sm text-muted">Permission prompt will appear the first time. Works best in good lighting.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Scan from Image</h2>
-        <input id="scanFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-        <div id="scanResult" class="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-700"></div>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Scan from Image</h2>
+        <input id="scanFile" type="file" accept="image/*" class="form-field" />
+        <div id="scanResult" class="panel-highlight text-sm text-muted min-h-[88px] flex items-center justify-center text-center">Drop a QR image to decode instantly.</div>
       </div>
     </section>
 
     <section id="panel-bg" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Upload Image</h2>
-        <input id="bgFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Upload Image</h2>
+        <input id="bgFile" type="file" accept="image/*" class="form-field" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm text-slate-300">Mode</label>
-            <select id="bgMode" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+            <label class="text-sm text-muted">Mode</label>
+            <select id="bgMode" class="form-field mt-1">
               <option value="auto-person">AI: Person Cutout (on-device)</option>
               <option value="chroma">Chroma‑Key (solid background)</option>
             </select>
           </div>
-          <div id="chromaOptions" class="hidden">
-            <label class="text-sm text-slate-300">Chroma Color</label>
-            <input id="chromaColor" type="color" value="#00ff00" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-            <label class="text-sm text-slate-300 block mt-3">Tolerance</label>
-            <input id="chromaTol" type="range" min="5" max="80" value="18" class="w-full" />
+          <div id="chromaOptions" class="hidden space-y-3">
+            <div>
+              <label class="text-sm text-muted">Chroma Color</label>
+              <input id="chromaColor" type="color" value="#00ff00" class="form-field mt-1" />
+            </div>
+            <div>
+              <label class="text-sm text-muted">Tolerance</label>
+              <input id="chromaTol" type="range" min="5" max="80" value="18" />
+            </div>
+          </div>
+          <div id="personOptions" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-muted flex items-center justify-between">Foreground Confidence <span id="personConfidenceVal" class="text-xs text-muted">55%</span></label>
+              <input id="personConfidence" type="range" min="35" max="90" value="55" />
+              <p class="text-xs text-muted mt-1">Lower if parts of the subject disappear; raise to clean halos.</p>
+            </div>
+            <div>
+              <label class="text-sm text-muted flex items-center justify-between">Edge Smoothness <span id="personFeatherVal" class="text-xs text-muted">2</span></label>
+              <input id="personFeather" type="range" min="0" max="5" value="2" />
+              <p class="text-xs text-muted mt-1">Higher values soften edges and close tiny gaps.</p>
+            </div>
           </div>
         </div>
-        <div class="flex gap-3 mt-6">
-          <button id="btnRemoveBg" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Remove Background</button>
-          <button id="btnDownloadCutout" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
+        <div class="flex flex-wrap gap-3">
+          <button id="btnRemoveBg" class="btn btn-primary flex-1 min-w-[150px]">Remove Background</button>
+          <button id="btnDownloadCutout" class="btn btn-secondary flex-1 min-w-[150px]">Download PNG</button>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
+        <p class="text-sm text-muted">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Preview</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Preview</h2>
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Input</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
+            <h3 class="text-sm text-muted mb-2">Input</h3>
+            <div class="checker p-3"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Cutout</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
+            <h3 class="text-sm text-muted mb-2">Cutout</h3>
+            <div class="checker p-3"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
         </div>
       </div>
@@ -205,16 +582,16 @@
 
     <!-- Image Compressor Panel -->
     <section id="panel-comp" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Image Compressor</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Image Compressor</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label class="block md:col-span-2">
-            <span class="text-sm text-slate-300">Upload</span>
-            <input id="compFile" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Upload</span>
+            <input id="compFile" type="file" accept="image/*" class="form-field mt-1" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Format</span>
-            <select id="compFormat" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+            <span class="text-sm text-muted">Format</span>
+            <select id="compFormat" class="form-field mt-1">
               <option value="auto">Auto (keep type)</option>
               <option value="image/jpeg">JPEG</option>
               <option value="image/webp">WebP</option>
@@ -222,47 +599,47 @@
             </select>
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Quality (JPEG/WebP)</span>
-            <input id="compQuality" type="range" min="0.4" max="0.95" step="0.05" value="0.8" class="w-full" />
+            <span class="text-sm text-muted">Quality (JPEG/WebP)</span>
+            <input id="compQuality" type="range" min="0.4" max="0.95" step="0.05" value="0.8" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Max Width</span>
-            <input id="compMaxW" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Max Width</span>
+            <input id="compMaxW" type="number" min="64" max="8000" value="1920" class="form-field mt-1" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Max Height</span>
-            <input id="compMaxH" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Max Height</span>
+            <input id="compMaxH" type="number" min="64" max="8000" value="1920" class="form-field mt-1" />
           </label>
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-            <button id="btnCompLocal" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Compress (Local)</button>
-            <button id="btnCompTiny" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Compress with TinyPNG</button>
+            <button id="btnCompLocal" class="btn btn-primary">Compress (Local)</button>
+            <button id="btnCompTiny" class="btn btn-secondary">Compress with TinyPNG</button>
           </div>
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
             <label class="block">
-              <span class="text-sm text-slate-300">TinyPNG Proxy URL (serverless)</span>
-              <input id="tinyProxy" type="url" placeholder="https://your-proxy.example.com/tinypng" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              <span class="text-sm text-muted">TinyPNG Proxy URL (serverless)</span>
+              <input id="tinyProxy" type="url" placeholder="https://your-proxy.example.com/tinypng" class="form-field mt-1" />
             </label>
             <label class="block">
-              <span class="text-sm text-slate-300">TinyPNG API Key (stored in your proxy)</span>
-              <input id="tinyHint" disabled value="Provide via proxy; this field is informational" class="mt-1 w-full rounded-xl bg-slate-900/30 border border-slate-700 p-2 text-slate-500" />
+              <span class="text-sm text-muted">TinyPNG API Key (stored in your proxy)</span>
+              <input id="tinyHint" disabled value="Provide via proxy; this field is informational" class="form-field mt-1" />
             </label>
           </div>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Local compression runs entirely in your browser. TinyPNG requires a small proxy you control to add API credentials and handle CORS.</p>
+        <p class="text-sm text-muted">Local compression runs entirely in your browser. TinyPNG requires a small proxy you control to add API credentials and handle CORS.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Preview & Stats</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Preview &amp; Stats</h2>
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Original</h3>
-            <div class="checker rounded-2xl p-2"><img id="compOrigImg" class="w-full rounded-xl" /></div>
-            <div id="compOrigMeta" class="text-xs text-slate-400 mt-1"></div>
+            <h3 class="text-sm text-muted mb-2">Original</h3>
+            <div class="checker p-3"><img id="compOrigImg" class="w-full rounded-xl" /></div>
+            <div id="compOrigMeta" class="text-xs text-muted mt-1"></div>
           </div>
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Compressed</h3>
-            <div class="checker rounded-2xl p-2"><img id="compOutImg" class="w-full rounded-xl" /></div>
-            <div id="compOutMeta" class="text-xs text-slate-400 mt-1"></div>
-            <div class="mt-3"><button id="btnCompDownload" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download</button></div>
+            <h3 class="text-sm text-muted mb-2">Compressed</h3>
+            <div class="checker p-3"><img id="compOutImg" class="w-full rounded-xl" /></div>
+            <div id="compOutMeta" class="text-xs text-muted mt-1"></div>
+            <div class="mt-3"><button id="btnCompDownload" class="btn btn-secondary">Download</button></div>
           </div>
         </div>
       </div>
@@ -271,7 +648,7 @@
     <!--
     <section id="faq" class="mt-10 glass rounded-3xl p-6">
       <h2 class="text-xl font-bold mb-4">Suggestions & Next Features</h2>
-      <ul class="list-disc pl-5 space-y-2 text-slate-300">
+      <ul class="list-disc pl-5 space-y-2 text-muted">
         <li>QR types: vCard, Wi‑Fi, Email, SMS, Geo, Calendar, and bulk generation (CSV upload).</li>
         <li>Branding: templates, gradient/eye shapes, logo safe‑zone checker, vector (SVG) export with outlines.</li>
         <li>Short links & analytics: integrate a link shortener with scan analytics (UTM, device, geo).</li>
@@ -284,16 +661,56 @@
     </section>
     -->
 
-    <section id="privacy" class="mt-6 text-slate-400 text-sm">
+    <section id="privacy" class="mt-6 text-sm text-muted">
       <p><strong>Privacy:</strong> Everything runs locally in your browser. Camera frames are processed on‑device. If you later enable an external API for background removal, those images will leave the device per that provider’s policy.</p>
     </section>
   </main>
 
-  <footer class="container mx-auto px-4 py-10 text-center text-slate-400 text-sm">
+  <footer class="container max-w-6xl mx-auto px-4 py-10 text-center text-sm text-muted">
     Built with ❤️ — Frontend‑only MVP. No server required.
   </footer>
 
   <script>
+    // ---------- Theme
+    const root = document.documentElement;
+    const themeToggleEl = document.getElementById('themeToggle');
+    const themeLabelEl = themeToggleEl ? themeToggleEl.querySelector('.theme-label') : null;
+
+    function setTheme(theme, persist = true) {
+      root.dataset.theme = theme;
+      if (persist) {
+        try { localStorage.setItem('aoi-theme', theme); } catch (err) {}
+      }
+      if (themeToggleEl && themeLabelEl) {
+        themeToggleEl.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        themeLabelEl.textContent = theme === 'dark' ? 'Dark mode' : 'Light mode';
+      }
+    }
+
+    if (themeToggleEl && themeLabelEl) {
+      const storedTheme = (() => { try { return localStorage.getItem('aoi-theme'); } catch (err) { return null; } })();
+      const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : { matches: root.dataset.theme === 'dark' };
+      setTheme(root.dataset.theme || storedTheme || (prefersDark.matches ? 'dark' : 'light'), false);
+
+      themeToggleEl.addEventListener('click', () => {
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      });
+
+      const systemHandler = (event) => {
+        const manual = (() => { try { return localStorage.getItem('aoi-theme'); } catch (err) { return null; } })();
+        if (!manual) {
+          setTheme(event.matches ? 'dark' : 'light', false);
+        }
+      };
+
+      if (typeof prefersDark.addEventListener === 'function') {
+        prefersDark.addEventListener('change', systemHandler);
+      } else if (typeof prefersDark.addListener === 'function') {
+        prefersDark.addListener(systemHandler);
+      }
+    }
+
     // ---------- Tabs
     const tabs = document.querySelectorAll('.tab-btn');
     const panels = { gen: document.getElementById('panel-gen'), scan: document.getElementById('panel-scan'), bg: document.getElementById('panel-bg'), comp: document.getElementById('panel-comp') };
@@ -305,85 +722,335 @@
     }));
 
     // ---------- QR GENERATOR
-    let qr; const qrDiv = document.getElementById('qrPreview');
+    const qrDiv = document.getElementById('qrPreview');
+    let qr; let qrStyler = null; let qrBackend = null;
+    const loadedScripts = new Set();
+    let lastLogoFile = null;
+    let lastLogoDataUrl = null;
+    let logoRenderToken = 0;
 
-    async function ensureQrLib(){
-      // Prefer classic qrcodejs global (QRCode)
-      if (window.QRCode) return 'qrcodejs';
-
-      // Helper to load a script tag with fallback
-      const loadScript = (src) => new Promise((resolve, reject) => {
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if (loadedScripts.has(src)) return resolve(true);
         const s = document.createElement('script');
         s.src = src; s.async = true; s.crossOrigin = 'anonymous';
-        s.onload = () => resolve(true);
+        s.onload = () => { loadedScripts.add(src); resolve(true); };
         s.onerror = () => reject(new Error('Failed to load ' + src));
         document.head.appendChild(s);
       });
+    }
 
-      // Try multiple CDNs for qrcodejs (global QRCode)
+    async function ensureQrLib(){
+      if (window.QRCodeStyling) { qrBackend = 'styling'; return 'styling'; }
+
+      const qrStylingCDNs = [
+        'https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js',
+        'https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js'
+      ];
+      for (const url of qrStylingCDNs) {
+        try {
+          await loadScript(url);
+          if (window.QRCodeStyling) { qrBackend = 'styling'; return 'styling'; }
+        } catch (e) { console.warn('CDN fail', url); }
+      }
+
+      if (window.QRCode) { qrBackend = 'qrcodejs'; return 'qrcodejs'; }
+
       const qrcodejsCDNs = [
         'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
         'https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js',
         'https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js'
       ];
       for (const url of qrcodejsCDNs) {
-        try { await loadScript(url); if (window.QRCode) return 'qrcodejs'; } catch(e){ console.warn('CDN fail', url); }
+        try {
+          await loadScript(url);
+          if (window.QRCode) { qrBackend = 'qrcodejs'; return 'qrcodejs'; }
+        } catch (e) { console.warn('CDN fail', url); }
       }
 
-      // Fallback: "qrcode" npm browser bundle (global window.qrcode)
       const qrcodeBundleCDNs = [
         'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js',
         'https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js'
       ];
       for (const url of qrcodeBundleCDNs) {
-        try { await loadScript(url); if (window.qrcode) return 'qrcode-module'; } catch(e){ console.warn('CDN fail', url); }
+        try {
+          await loadScript(url);
+          if (window.qrcode) { qrBackend = 'qrcode-module'; return 'qrcode-module'; }
+        } catch (e) { console.warn('CDN fail', url); }
       }
 
       throw new Error('No QR library could be loaded (network/CSP?)');
     }
 
+    function debounce(fn, wait = 180) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+      };
+    }
+
+    function autoGrowTextArea(el, max = 320) {
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, max) + 'px';
+    }
+
+    const qrTypeSelect = document.getElementById('qrType');
+    const qrTypeGroups = document.querySelectorAll('.qr-type-group');
+    const wifiPassRow = document.querySelector('[data-wifi-pass]');
+    const wifiSecurity = document.getElementById('qrWifiSecurity');
+    const fgModeSelect = document.getElementById('qrFgMode');
+    const gradientOpts = document.getElementById('qrGradientOpts');
+    const gradientAngle = document.getElementById('qrGradientAngle');
+    const gradientAngleVal = document.getElementById('qrGradientAngleVal');
+    const logoScaleInput = document.getElementById('qrLogoScale');
+    const logoScaleLabel = document.getElementById('qrLogoScaleLabel');
+    const logoMarginInput = document.getElementById('qrLogoMargin');
+    const logoMarginLabel = document.getElementById('qrLogoMarginLabel');
+
+    function updateGradientVisibility() {
+      if (!fgModeSelect || !gradientOpts) return;
+      const show = fgModeSelect.value === 'gradient';
+      gradientOpts.classList.toggle('hidden', !show);
+    }
+
+    function updateGradientAngleLabel() {
+      if (!gradientAngle || !gradientAngleVal) return;
+      gradientAngleVal.textContent = Math.round(Number(gradientAngle.value) || 0) + '°';
+    }
+
+    function updateLogoScaleLabel() {
+      if (!logoScaleInput || !logoScaleLabel) return;
+      logoScaleLabel.textContent = Math.round((parseFloat(logoScaleInput.value) || 0.22) * 100) + '%';
+    }
+
+    function updateLogoMarginLabel() {
+      if (!logoMarginInput || !logoMarginLabel) return;
+      logoMarginLabel.textContent = Math.round(parseFloat(logoMarginInput.value) || 0) + 'px';
+    }
+
+    function updateWifiPasswordVisibility() {
+      if (!wifiPassRow || !wifiSecurity) return;
+      wifiPassRow.classList.toggle('hidden', wifiSecurity.value === 'nopass');
+    }
+
+    function updateQrTypeGroups() {
+      const type = qrTypeSelect?.value || 'url';
+      qrTypeGroups.forEach(group => {
+        const isActive = group.dataset.type === type;
+        group.classList.toggle('hidden', !isActive);
+        if (isActive) {
+          group.querySelectorAll('textarea').forEach(el => autoGrowTextArea(el));
+        }
+      });
+      updateWifiPasswordVisibility();
+    }
+
+    const scheduleMakeQR = debounce(() => makeQR(), 180);
+
+    [qrTypeSelect, fgModeSelect, wifiSecurity, gradientAngle, logoScaleInput, logoMarginInput]
+      .forEach(el => {
+        if (!el) return;
+        const handler = () => scheduleMakeQR();
+        el.addEventListener('change', handler);
+        if (el === gradientAngle || el === logoScaleInput || el === logoMarginInput) {
+          el.addEventListener('input', handler);
+        }
+      });
+
+    const qrInputs = document.querySelectorAll('[data-qr-input]');
+    qrInputs.forEach(el => {
+      const trigger = () => scheduleMakeQR();
+      const events = new Set(['change']);
+      if (el.tagName === 'TEXTAREA' || el.type === 'text' || el.type === 'tel' || el.type === 'email' || el.type === 'url' || el.type === 'range' || el.type === 'color' || el.type === 'number') {
+        events.add('input');
+      }
+      if (el.type === 'file') {
+        events.add('change');
+      }
+      events.forEach(evt => el.addEventListener(evt, trigger));
+    });
+
+    fgModeSelect?.addEventListener('change', updateGradientVisibility);
+    gradientAngle?.addEventListener('input', updateGradientAngleLabel);
+    logoScaleInput?.addEventListener('input', updateLogoScaleLabel);
+    logoMarginInput?.addEventListener('input', updateLogoMarginLabel);
+    qrTypeSelect?.addEventListener('change', updateQrTypeGroups);
+    wifiSecurity?.addEventListener('change', updateWifiPasswordVisibility);
+
+    updateGradientVisibility();
+    updateGradientAngleLabel();
+    updateLogoScaleLabel();
+    updateLogoMarginLabel();
+    updateQrTypeGroups();
+
+    async function getLogoDataUrl() {
+      const logoInput = document.getElementById('qrLogo');
+      const file = logoInput?.files?.[0];
+      if (!file) {
+        lastLogoFile = null;
+        lastLogoDataUrl = null;
+        return null;
+      }
+      if (file === lastLogoFile && lastLogoDataUrl) return lastLogoDataUrl;
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      lastLogoFile = file;
+      lastLogoDataUrl = dataUrl;
+      return dataUrl;
+    }
+
+    function buildQrData() {
+      const type = qrTypeSelect?.value || 'url';
+      const fallback = 'https://example.com';
+      if (type === 'wifi') {
+        const ssid = (document.getElementById('qrWifiSsid')?.value || '').trim();
+        const pass = (document.getElementById('qrWifiPassword')?.value || '').trim();
+        const security = document.getElementById('qrWifiSecurity')?.value || 'WPA';
+        const hidden = document.getElementById('qrWifiHidden')?.checked ? 'H:true;' : '';
+        const escapeWifi = (str) => str.replace(/([\\;,:"])/g, '\\$1');
+        if (!ssid) return fallback;
+        let payload = `WIFI:T:${security};S:${escapeWifi(ssid)};`;
+        if (security !== 'nopass' && pass) {
+          payload += `P:${escapeWifi(pass)};`;
+        }
+        if (hidden) payload += hidden;
+        return payload + ';';
+      }
+      if (type === 'email') {
+        const to = (document.getElementById('qrEmailTo')?.value || '').trim();
+        const subject = (document.getElementById('qrEmailSubject')?.value || '').trim();
+        const body = (document.getElementById('qrEmailBody')?.value || '').trim();
+        if (!to && !subject && !body) return fallback;
+        const params = [];
+        if (subject) params.push('subject=' + encodeURIComponent(subject));
+        if (body) params.push('body=' + encodeURIComponent(body));
+        return `mailto:${encodeURIComponent(to) || ''}${params.length ? '?' + params.join('&') : ''}`;
+      }
+      if (type === 'sms') {
+        const number = (document.getElementById('qrSmsNumber')?.value || '').trim();
+        const message = (document.getElementById('qrSmsMessage')?.value || '').trim();
+        if (!number && !message) return fallback;
+        return `sms:${encodeURIComponent(number)}${message ? '?body=' + encodeURIComponent(message) : ''}`;
+      }
+      if (type === 'phone') {
+        const number = (document.getElementById('qrPhoneNumber')?.value || '').trim();
+        if (!number) return fallback;
+        return `tel:${encodeURIComponent(number)}`;
+      }
+      const text = (document.getElementById('qrText')?.value || '').trim();
+      return text || fallback;
+    }
+
     async function makeQR() {
       const backend = await ensureQrLib();
-      const text = document.getElementById('qrText').value || 'https://example.com';
-      const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
-      const fg = document.getElementById('qrFg').value || '#000000';
-      const bg = document.getElementById('qrBg').value || '#ffffff';
-      const ec = (document.getElementById('qrEC').value || 'M');
-      const margin = parseInt(document.getElementById('qrMargin').value, 10) || 2;
+      qrBackend = backend;
+      const data = buildQrData();
+      const size = parseInt(document.getElementById('qrSize')?.value, 10) || 320;
+      const fg = document.getElementById('qrFg')?.value || '#000000';
+      const fgAlt = document.getElementById('qrFgAlt')?.value || fg;
+      const bg = document.getElementById('qrBg')?.value || '#ffffff';
+      const ec = (document.getElementById('qrEC')?.value || 'M');
+      const margin = parseInt(document.getElementById('qrMargin')?.value, 10) || 2;
+      const dotStyle = document.getElementById('qrDotStyle')?.value || 'square';
+      const cornerSquareStyle = document.getElementById('qrCornerSquareStyle')?.value || 'square';
+      const cornerDotStyle = document.getElementById('qrCornerDotStyle')?.value || 'square';
+      const cornerColor = document.getElementById('qrCornerColor')?.value || fg;
+      const cornerDotColor = document.getElementById('qrCornerDotColor')?.value || cornerColor;
+      const colorMode = fgModeSelect?.value || 'solid';
+      const gradientRotation = parseInt(gradientAngle?.value || '0', 10) || 0;
+      const logoScale = parseFloat(logoScaleInput?.value || '0.22') || 0.22;
+      const logoMargin = parseInt(logoMarginInput?.value || '6', 10) || 0;
+      const hideLogoDots = document.getElementById('qrLogoHideDots')?.checked || false;
 
+      const callId = ++logoRenderToken;
+      let logoDataUrl = null;
+      try {
+        logoDataUrl = await getLogoDataUrl();
+      } catch (err) {
+        console.warn('Logo read failed', err);
+        logoDataUrl = null;
+      }
+      if (callId !== logoRenderToken) return; // newer render requested
+
+      if (backend === 'styling' && window.QRCodeStyling) {
+        const dotsOptions = { type: dotStyle };
+        if (colorMode === 'gradient') {
+          dotsOptions.gradient = {
+            type: 'linear',
+            rotation: gradientRotation,
+            colorStops: [
+              { offset: 0, color: fg },
+              { offset: 1, color: fgAlt }
+            ]
+          };
+        } else {
+          dotsOptions.color = fg;
+        }
+
+        const options = {
+          width: size,
+          height: size,
+          type: 'canvas',
+          data,
+          margin,
+          qrOptions: { errorCorrectionLevel: ec },
+          dotsOptions,
+          backgroundOptions: { color: bg },
+          cornersSquareOptions: { type: cornerSquareStyle, color: cornerColor },
+          cornersDotOptions: { type: cornerDotStyle, color: cornerDotColor }
+        };
+
+        if (logoDataUrl) {
+          options.image = logoDataUrl;
+          options.imageOptions = {
+            hideBackgroundDots: hideLogoDots,
+            margin: Math.max(0, logoMargin),
+            imageSize: Math.max(0.1, Math.min(0.45, logoScale)),
+            crossOrigin: 'anonymous'
+          };
+        }
+
+        qrStyler = new QRCodeStyling(options);
+        qrDiv.style.padding = '0px';
+        qrDiv.innerHTML = '';
+        qrStyler.append(qrDiv);
+        return;
+      }
+
+      qrStyler = null;
       qrDiv.innerHTML = '';
-
       let canvasEl;
       if (backend === 'qrcodejs') {
-        // classic qrcodejs path
         qr = new QRCode(qrDiv, {
-          text, width: size, height: size,
-          colorDark: fg, colorLight: bg,
+          text: data,
+          width: size,
+          height: size,
+          colorDark: fg,
+          colorLight: bg,
           correctLevel: QRCode.CorrectLevel[ec] || QRCode.CorrectLevel.M,
         });
         canvasEl = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
       } else {
-        // fallback to qrcode (toCanvas)
         canvasEl = document.createElement('canvas');
         canvasEl.width = size; canvasEl.height = size;
         qrDiv.appendChild(canvasEl);
-        await window.qrcode.toCanvas(canvasEl, text, {
+        await window.qrcode.toCanvas(canvasEl, data, {
           width: size,
           color: { dark: fg, light: bg },
           errorCorrectionLevel: ec
         });
       }
 
-      // Apply margin by wrapping in padding
       qrDiv.style.padding = margin + 'px';
 
-      // Choice 3A — Auto-convert <img> → <canvas> when a logo is selected,
-      // then draw a rounded (A) logo on top.
-      let file = document.getElementById('qrLogo').files?.[0];
-      if (!canvasEl) return;
-
-      // If the QR output is an <img> and a logo is chosen, convert to canvas first
-      if (file && canvasEl.tagName !== 'CANVAS') {
+      if (!canvasEl || !logoDataUrl) return;
+      if (canvasEl.tagName !== 'CANVAS') {
         const imgEl = canvasEl;
         const c = document.createElement('canvas');
         const w = imgEl.naturalWidth || size;
@@ -391,37 +1058,31 @@
         c.width = w; c.height = h;
         const ctx0 = c.getContext('2d');
         ctx0.drawImage(imgEl, 0, 0, w, h);
-        // Replace DOM so downstream code sees a canvas
         qrDiv.innerHTML = '';
         qrDiv.appendChild(c);
         canvasEl = c;
       }
 
-      // If no logo file, we are done
-      if (!file) return;
-
-      // Draw rounded logo with white pad
-      const reader = new FileReader();
-      reader.onload = () => {
-        const logo = new Image();
-        logo.onload = () => {
-          if (!canvasEl || canvasEl.tagName !== 'CANVAS') return; // safety
-          const ctx = canvasEl.getContext('2d');
-          const s = Math.min(canvasEl.width, canvasEl.height);
-          const target = Math.floor(s * 0.2); // 20%
-          const x = (canvasEl.width - target) / 2;
-          const y = (canvasEl.height - target) / 2;
-          const r = 12;
-          ctx.save();
-          ctx.fillStyle = '#ffffffcc';
-          roundRect(ctx, x - 8, y - 8, target + 16, target + 16, r);
-          ctx.fill();
-          ctx.restore();
-          ctx.drawImage(logo, x, y, target, target);
-        };
-        logo.src = reader.result;
+      const logo = new Image();
+      logo.onload = () => {
+        if (callId !== logoRenderToken) return;
+        const ctx = canvasEl.getContext('2d');
+        const s = Math.min(canvasEl.width, canvasEl.height);
+        const target = Math.floor(s * Math.max(0.1, Math.min(0.45, logoScale)));
+        const pad = Math.max(0, logoMargin);
+        const x = (canvasEl.width - target) / 2;
+        const y = (canvasEl.height - target) / 2;
+        const r = Math.max(8, Math.floor(target * 0.18));
+        ctx.save();
+        ctx.globalAlpha = hideLogoDots ? 1 : 0.9;
+        ctx.fillStyle = bg;
+        roundRect(ctx, x - pad, y - pad, target + pad * 2, target + pad * 2, r);
+        ctx.fill();
+        ctx.restore();
+        ctx.drawImage(logo, x, y, target, target);
       };
-      reader.readAsDataURL(file);
+      logo.onerror = () => console.warn('Logo render failed');
+      logo.src = logoDataUrl;
     }
 
     function roundRect(ctx, x, y, w, h, r) {
@@ -434,7 +1095,42 @@
       ctx.closePath();
     }
 
-    document.getElementById('btnGen').addEventListener('click', () => makeQR());
+    const qrTextArea = document.getElementById('qrText');
+    const qrEmailBody = document.getElementById('qrEmailBody');
+    const qrSmsMessage = document.getElementById('qrSmsMessage');
+
+    [[qrTextArea, 320], [qrEmailBody, 260], [qrSmsMessage, 260]].forEach(([el, max]) => {
+      if (!el) return;
+      const grow = () => autoGrowTextArea(el, max);
+      el.addEventListener('input', grow);
+      el.addEventListener('change', grow);
+      grow();
+    });
+
+    const useCurrentUrlBtn = document.getElementById('btnUseCurrentUrl');
+    if (useCurrentUrlBtn && qrTextArea) {
+      useCurrentUrlBtn.addEventListener('click', () => {
+        if (qrTypeSelect) {
+          qrTypeSelect.value = 'url';
+          updateQrTypeGroups();
+        }
+        qrTextArea.value = window.location.href;
+        qrTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+        qrTextArea.focus();
+        const end = qrTextArea.value.length;
+        qrTextArea.setSelectionRange(end, end);
+      });
+    }
+
+    const logoInput = document.getElementById('qrLogo');
+    if (logoInput) {
+      logoInput.addEventListener('change', () => {
+        lastLogoFile = null;
+        lastLogoDataUrl = null;
+      });
+    }
+
+    document.getElementById('btnGen')?.addEventListener('click', () => makeQR());
     // initial render (non-blocking)
     makeQR();
 
@@ -456,13 +1152,27 @@
       const a = document.createElement('a'); a.href = uri; a.download = name; a.click();
     }
 
-    document.getElementById('btnDownloadPNG').addEventListener('click', () => {
+    document.getElementById('btnDownloadPNG')?.addEventListener('click', async () => {
+      if (!qrBackend) await makeQR();
+      if (qrBackend === 'styling') {
+        if (!qrStyler) await makeQR();
+        if (!qrStyler) return alert('Generate a QR first.');
+        qrStyler.download({ name: 'qr', extension: 'png' });
+        return;
+      }
       const el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
       if (!el) return alert('Generate a QR first.');
       downloadURI(dataUrlFromCanvasOrImg(el, 'image/png'), 'qr.png');
     });
 
-    document.getElementById('btnDownloadSVG').addEventListener('click', async () => {
+    document.getElementById('btnDownloadSVG')?.addEventListener('click', async () => {
+      if (!qrBackend) await makeQR();
+      if (qrBackend === 'styling') {
+        if (!qrStyler) await makeQR();
+        if (!qrStyler) return alert('Generate a QR first.');
+        qrStyler.download({ name: 'qr', extension: 'svg' });
+        return;
+      }
       // Export current output as PNG-wrapped SVG for compatibility
       let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
       if (!el) await makeQR();
@@ -479,23 +1189,86 @@
     let html5QrCode;
     const qrReaderEl = document.getElementById('qr-reader');
     const scanResultEl = document.getElementById('scanResult');
+    const cameraSelect = document.getElementById('cameraSelect');
+    let availableCameras = [];
+    let isScannerRunning = false;
+    let loadingCameras = false;
+
+    async function populateCameras(force = false) {
+      if (!cameraSelect || loadingCameras) return;
+      loadingCameras = true;
+      try {
+        if (force || !availableCameras.length) {
+          availableCameras = await Html5Qrcode.getCameras();
+        }
+        const prevValue = cameraSelect.value;
+        cameraSelect.innerHTML = '';
+        if (!availableCameras.length) {
+          const opt = document.createElement('option');
+          opt.textContent = 'No cameras found';
+          cameraSelect.appendChild(opt);
+          cameraSelect.disabled = true;
+          return;
+        }
+        availableCameras.forEach((cam, idx) => {
+          const opt = document.createElement('option');
+          opt.value = cam.id;
+          opt.textContent = cam.label || `Camera ${idx + 1}`;
+          cameraSelect.appendChild(opt);
+        });
+        cameraSelect.disabled = false;
+        if (prevValue && availableCameras.some(cam => cam.id === prevValue)) {
+          cameraSelect.value = prevValue;
+        } else if (availableCameras[0]) {
+          cameraSelect.value = availableCameras[0].id;
+        }
+      } catch (err) {
+        cameraSelect.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.textContent = 'Camera access blocked';
+        cameraSelect.appendChild(opt);
+        cameraSelect.disabled = true;
+        console.error('Camera list error', err);
+      } finally {
+        loadingCameras = false;
+      }
+    }
+    populateCameras();
+    cameraSelect?.addEventListener('focus', () => populateCameras(true));
 
     async function startScanner() {
       try {
         if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
-        const cams = await Html5Qrcode.getCameras();
-        const camId = cams?.[0]?.id;
+        if (!availableCameras.length || !cameraSelect?.value) await populateCameras(true);
+        const camId = cameraSelect?.value || availableCameras?.[0]?.id;
         if (!camId) throw new Error('No camera found');
+        if (isScannerRunning) {
+          await html5QrCode.stop();
+          isScannerRunning = false;
+        }
         await html5QrCode.start(camId, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure);
+        isScannerRunning = true;
       } catch (e) { alert('Camera error: ' + e.message); }
     }
     function onScanSuccess(decodedText) {
-      scanResultEl.innerHTML = `<div class="srchighlight rounded-xl p-3 bg-slate-900/70 border border-slate-700"><div class="text-xs text-slate-400 mb-1">Result</div><div class="font-mono break-all">${escapeHtml(decodedText)}</div><div class='mt-2'><a class='text-cyan-400 underline' target='_blank' href='${decodedText}'>Open</a></div></div>`;
+      scanResultEl.classList.remove('items-center', 'justify-center', 'text-center', 'text-muted');
+      scanResultEl.classList.add('flex', 'flex-col', 'items-start', 'justify-start', 'gap-2', 'text-left');
+      scanResultEl.innerHTML = `<div class="text-xs text-muted uppercase tracking-wide">Result</div><div class="font-mono break-all">${escapeHtml(decodedText)}</div><div class='mt-2'><a class='underline' target='_blank' rel='noopener noreferrer' href='${decodedText}'>Open</a></div>`;
     }
     function onScanFailure() { /* ignore continuous errors */ }
     document.getElementById('btnScanStart').addEventListener('click', startScanner);
     document.getElementById('btnScanStop').addEventListener('click', async () => {
-      if (html5QrCode) await html5QrCode.stop();
+      if (html5QrCode && isScannerRunning) {
+        await html5QrCode.stop();
+        isScannerRunning = false;
+      }
+    });
+    cameraSelect?.addEventListener('change', async () => {
+      if (html5QrCode && isScannerRunning) {
+        await html5QrCode.stop();
+        isScannerRunning = false;
+        startScanner();
+      }
     });
 
     document.getElementById('scanFile').addEventListener('change', async (e) => {
@@ -518,22 +1291,61 @@
     const chromaOptions = document.getElementById('chromaOptions');
     const chromaColor = document.getElementById('chromaColor');
     const chromaTol = document.getElementById('chromaTol');
+    const personOptions = document.getElementById('personOptions');
+    const personConfidence = document.getElementById('personConfidence');
+    const personConfidenceVal = document.getElementById('personConfidenceVal');
+    const personFeather = document.getElementById('personFeather');
+    const personFeatherVal = document.getElementById('personFeatherVal');
+
+    function syncPersonControls() {
+      if (personConfidenceVal) personConfidenceVal.textContent = `${personConfidence.value}%`;
+      if (personFeatherVal) personFeatherVal.textContent = personFeather.value;
+    }
 
     bgModeSel.addEventListener('change', () => {
       chromaOptions.classList.toggle('hidden', bgModeSel.value !== 'chroma');
+      personOptions.classList.toggle('hidden', bgModeSel.value !== 'auto-person');
+      if (bgModeSel.value === 'auto-person') {
+        syncPersonControls();
+        if (sourceImg) applyPersonMask();
+      }
     });
+    syncPersonControls();
 
     let sourceImg;
+    let basePersonMask = null;
+    let baseMaskW = 0;
+    let baseMaskH = 0;
+    let selfieInstance;
+    let segInFlight = false;
+    const segTmpCanvas = document.createElement('canvas');
+    const segTmpCtx = segTmpCanvas.getContext('2d');
+    const personMaskCanvas = document.createElement('canvas');
+    const personMaskCtx = personMaskCanvas.getContext('2d');
     document.getElementById('bgFile').addEventListener('change', (e) => {
       const f = e.target.files?.[0];
       if (!f) return;
       const reader = new FileReader();
       reader.onload = () => {
         const img = new Image();
-        img.onload = () => { sourceImg = img; drawInput(img); };
+        img.onload = () => {
+          sourceImg = img;
+          drawInput(img);
+          basePersonMask = null;
+          baseMaskW = baseMaskH = 0;
+        };
         img.src = reader.result;
       };
       reader.readAsDataURL(f);
+    });
+
+    personConfidence?.addEventListener('input', () => {
+      syncPersonControls();
+      applyPersonMask();
+    });
+    personFeather?.addEventListener('input', () => {
+      syncPersonControls();
+      applyPersonMask();
     });
 
     function drawInput(img) {
@@ -551,7 +1363,7 @@
       if (bgModeSel.value === 'chroma') {
         chromaKey();
       } else {
-        await personCutout();
+        await personCutout(true);
       }
     }
 
@@ -564,42 +1376,142 @@
 
     function chromaKey() {
       const w = inC.width, h = inC.height;
+      if (!w || !h) return;
       const src = inCtx.getImageData(0,0,w,h);
       const dst = outCtx.createImageData(w,h);
       const [rT,gT,bT] = hexToRgb(chromaColor.value);
       const tol = parseInt(chromaTol.value,10);
-      for (let i=0;i<src.data.length;i+=4){
+      const softness = Math.max(12, tol * 1.35);
+      const alphaMask = new Float32Array(w*h);
+      for (let i=0,j=0;i<src.data.length;i+=4,j++){
         const r=src.data[i], g=src.data[i+1], b=src.data[i+2], a=src.data[i+3];
         const dist = Math.sqrt((r-rT)**2 + (g-gT)**2 + (b-bT)**2);
-        const keep = dist > tol * 3; // rough mapping
-        dst.data[i] = r; dst.data[i+1] = g; dst.data[i+2] = b; dst.data[i+3] = keep ? a : 0;
+        let alpha = (dist - tol) / softness;
+        alpha = Math.max(0, Math.min(1, alpha));
+        alphaMask[j] = alpha * (a / 255);
+        dst.data[i] = r; dst.data[i+1] = g; dst.data[i+2] = b;
+      }
+      const smoothPasses = Math.max(0, Math.round(tol / 25));
+      if (smoothPasses > 0) smoothAlpha(alphaMask, w, h, smoothPasses);
+      for (let i=0,j=0;i<dst.data.length;i+=4,j++){
+        dst.data[i+3] = Math.round(alphaMask[j] * 255);
       }
       outCtx.putImageData(dst,0,0);
     }
 
-    async function personCutout() {
-      // Uses Mediapipe SelfieSegmentation (person only)
+    function smoothAlpha(alpha, width, height, iterations = 1) {
+      if (!iterations) return alpha;
+      const tmp = new Float32Array(alpha.length);
+      for (let iter = 0; iter < iterations; iter++) {
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            let sum = 0;
+            let count = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              const ny = y + dy;
+              if (ny < 0 || ny >= height) continue;
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = x + dx;
+                if (nx < 0 || nx >= width) continue;
+                sum += alpha[ny * width + nx];
+                count++;
+              }
+            }
+            tmp[y * width + x] = count ? sum / count : alpha[y * width + x];
+          }
+        }
+        alpha.set(tmp);
+      }
+      return alpha;
+    }
+
+    function applyPersonMask() {
+      if (!basePersonMask || !baseMaskW || !baseMaskH) {
+        if (!segInFlight && sourceImg && bgModeSel.value === 'auto-person') personCutout(true);
+        return;
+      }
+      const w = baseMaskW;
+      const h = baseMaskH;
+      const threshold = (parseInt(personConfidence?.value || '55', 10) || 55) / 100;
+      const featherPasses = parseInt(personFeather?.value || '0', 10) || 0;
+      const working = basePersonMask.slice();
+      const denom = Math.max(0.0001, 1 - threshold);
+      for (let i = 0; i < working.length; i++) {
+        let val = (working[i] - threshold) / denom;
+        working[i] = Math.min(1, Math.max(0, val));
+      }
+      if (featherPasses > 0) smoothAlpha(working, w, h, featherPasses * 2);
+
+      personMaskCanvas.width = w;
+      personMaskCanvas.height = h;
+      const maskData = personMaskCtx.createImageData(w, h);
+      for (let i = 0, j = 0; i < maskData.data.length; i += 4, j++) {
+        const alpha = Math.round(working[j] * 255);
+        maskData.data[i] = 255;
+        maskData.data[i + 1] = 255;
+        maskData.data[i + 2] = 255;
+        maskData.data[i + 3] = alpha;
+      }
+      personMaskCtx.putImageData(maskData, 0, 0);
+
+      outCtx.clearRect(0, 0, w, h);
+      outCtx.drawImage(inC, 0, 0, w, h);
+      outCtx.globalCompositeOperation = 'destination-in';
+      outCtx.drawImage(personMaskCanvas, 0, 0, w, h);
+      outCtx.globalCompositeOperation = 'source-over';
+    }
+
+    async function personCutout(forceRefresh = true) {
+      if (!sourceImg) return;
       const w = inC.width, h = inC.height;
-      const selfie = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
-      selfie.setOptions({ modelSelection: 1 }); // 0: landscape, 1: general
-      await new Promise(resolve => {
-        selfie.onResults((res) => {
-          const mask = res.segmentationMask; // HTMLCanvasElement
-          // Compose: keep person (white) remove background (black)
-          const tmp = document.createElement('canvas'); tmp.width=w; tmp.height=h;
-          const tctx = tmp.getContext('2d');
-          tctx.drawImage(inC,0,0,w,h);
-          // Use mask as alpha
-          outCtx.clearRect(0,0,w,h);
-          outCtx.save();
-          outCtx.drawImage(mask,0,0,w,h);
-          outCtx.globalCompositeOperation = 'source-in';
-          outCtx.drawImage(inC,0,0,w,h);
-          outCtx.restore();
+      if (!w || !h) return;
+      if (!forceRefresh && basePersonMask && baseMaskW === w && baseMaskH === h) {
+        applyPersonMask();
+        return;
+      }
+      if (segInFlight) return;
+      if (!selfieInstance) {
+        selfieInstance = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
+        selfieInstance.setOptions({ modelSelection: 1 });
+      }
+      segInFlight = true;
+      await new Promise((resolve) => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          segInFlight = false;
           resolve();
+        };
+        selfieInstance.onResults((res) => {
+          try {
+            segTmpCanvas.width = w;
+            segTmpCanvas.height = h;
+            segTmpCtx.clearRect(0, 0, w, h);
+            segTmpCtx.drawImage(res.segmentationMask, 0, 0, w, h);
+            const data = segTmpCtx.getImageData(0, 0, w, h).data;
+            basePersonMask = new Float32Array(w * h);
+            for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+              basePersonMask[j] = data[i] / 255;
+            }
+            baseMaskW = w;
+            baseMaskH = h;
+            applyPersonMask();
+          } finally {
+            finish();
+          }
         });
-        // Convert the current canvas to an image and send to Mediapipe as if it were a video frame
-        const img = new Image(); img.onload = () => selfie.send({ image: img });
+        const img = new Image();
+        img.onload = () => {
+          selfieInstance.send({ image: img }).catch((err) => {
+            console.error('SelfieSegmentation send failed', err);
+            finish();
+          });
+        };
+        img.onerror = (err) => {
+          console.error('Segmentation image load failed', err);
+          finish();
+        };
         img.src = inC.toDataURL('image/png');
       });
     }
@@ -619,7 +1531,10 @@
         const backend = await ensureQrLib();
         results.push(['lib-loaded', backend === 'qrcodejs' || backend === 'qrcode-module']);
         // Test 1: basic QR render
-        document.getElementById('qrText').value = 'test://qr';
+        if (qrTextArea) {
+          qrTextArea.value = 'test://qr';
+          qrTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
         await makeQR();
         let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
         results.push(['qr-rendered', !!el]);
