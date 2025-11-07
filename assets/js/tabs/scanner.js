@@ -1,4 +1,4 @@
-import { loadScript } from '../utils.js';
+import { loadScript, trackEvent } from '../utils.js';
 
 let initialized = false;
 let html5QrCode;
@@ -46,6 +46,10 @@ async function populateCameras(force = false) {
     } else if (availableCameras[0]) {
       cameraSelect.value = availableCameras[0].id;
     }
+    trackEvent('scanner_cameras_loaded', {
+      event_category: 'scanner',
+      event_label: String(availableCameras.length)
+    });
   } catch (err) {
     cameraSelect.innerHTML = '';
     const opt = document.createElement('option');
@@ -71,6 +75,11 @@ function onScanSuccess(decodedText) {
     <div class="font-mono break-all">${escapeHtml(decodedText)}</div>
     <div class="mt-2"><a class="underline" target="_blank" rel="noopener noreferrer" href="${decodedText}">Open</a></div>
   `;
+  trackEvent('scanner_result', {
+    event_category: 'scanner',
+    event_label: decodedText.slice(0, 120),
+    value: decodedText.length
+  });
 }
 
 function onScanFailure() {
@@ -96,8 +105,13 @@ async function startScanner() {
     }
     await html5QrCode.start(camId, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure);
     isScannerRunning = true;
+    trackEvent('scanner_start', { event_category: 'scanner', event_label: camId });
   } catch (err) {
     alert('Camera error: ' + err.message);
+    trackEvent('scanner_error', {
+      event_category: 'scanner',
+      event_label: (err?.message || 'unknown').slice(0, 120)
+    });
   }
 }
 
@@ -105,6 +119,7 @@ async function stopScanner() {
   if (!html5QrCode || !isScannerRunning) return;
   await html5QrCode.stop();
   isScannerRunning = false;
+  trackEvent('scanner_stop', { event_category: 'scanner' });
 }
 
 async function scanFile(file) {
@@ -115,6 +130,10 @@ async function scanFile(file) {
   }
   const res = await html5QrCode.scanFile(file, true);
   onScanSuccess(res);
+  trackEvent('scanner_file_scan', {
+    event_category: 'scanner',
+    event_label: file.type || file.name || 'image'
+  });
 }
 
 export async function init() {
@@ -129,6 +148,7 @@ export async function init() {
 
   cameraSelect?.addEventListener('focus', () => populateCameras(true));
   cameraSelect?.addEventListener('change', async () => {
+    trackEvent('scanner_camera_change', { event_category: 'scanner', event_label: cameraSelect.value });
     if (isScannerRunning) {
       await stopScanner();
       startScanner();

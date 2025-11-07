@@ -5,7 +5,8 @@ import {
   dataUrlFromCanvasOrImg,
   svgFromElement,
   downloadURI,
-  roundRect
+  roundRect,
+  trackEvent
 } from '../utils.js';
 
 let initialized = false;
@@ -325,14 +326,23 @@ async function makeQR() {
     const data = buildQrData();
     const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
     const margin = parseInt(document.getElementById('qrMargin').value, 10) || 2;
+    const typeLabel = qrTypeSelect?.value || 'url';
     if (backend === 'styling') {
       const success = await renderQrStyler(size, margin, data);
-      if (success) return;
+      if (success) {
+        trackEvent('qr_render', { event_category: 'qr', event_label: typeLabel, backend: 'styling' });
+        return;
+      }
     }
     await renderQrFallback(size, margin, data);
+    trackEvent('qr_render', { event_category: 'qr', event_label: typeLabel, backend: qrBackend || backend });
   } catch (err) {
     console.error(err);
     qrDiv.innerHTML = `<div class="text-sm text-red-500">${err.message}</div>`;
+    trackEvent('qr_error', {
+      event_category: 'qr',
+      event_label: (err?.message || 'unknown').slice(0, 120)
+    });
   }
 }
 
@@ -379,6 +389,7 @@ function hookDownloadButtons() {
         return;
       }
       qrStyler.download({ name: 'qr', extension: 'png' });
+      trackEvent('qr_download', { event_category: 'qr', event_label: 'png' });
       return;
     }
     const el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
@@ -387,6 +398,7 @@ function hookDownloadButtons() {
       return;
     }
     downloadURI(dataUrlFromCanvasOrImg(el, 'image/png'), 'qr.png');
+    trackEvent('qr_download', { event_category: 'qr', event_label: 'png' });
   });
 
   document.getElementById('btnDownloadSVG')?.addEventListener('click', async () => {
@@ -400,6 +412,7 @@ function hookDownloadButtons() {
         return;
       }
       qrStyler.download({ name: 'qr', extension: 'svg' });
+      trackEvent('qr_download', { event_category: 'qr', event_label: 'svg' });
       return;
     }
     let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
@@ -416,6 +429,7 @@ function hookDownloadButtons() {
     const svg = svgFromElement(el, size, bg);
     const blob = new Blob([svg], { type: 'image/svg+xml' });
     downloadURI(URL.createObjectURL(blob), 'qr.svg');
+    trackEvent('qr_download', { event_category: 'qr', event_label: 'svg' });
   });
 }
 
@@ -451,12 +465,21 @@ function hookInputs() {
     }
   });
 
-  fgModeSelect?.addEventListener('change', updateGradientVisibility);
+  fgModeSelect?.addEventListener('change', () => {
+    updateGradientVisibility();
+    trackEvent('qr_foreground_mode', { event_category: 'qr', event_label: fgModeSelect.value });
+  });
   gradientAngle?.addEventListener('input', updateGradientAngleLabel);
   logoScaleInput?.addEventListener('input', updateLogoScaleLabel);
   logoMarginInput?.addEventListener('input', updateLogoMarginLabel);
-  qrTypeSelect?.addEventListener('change', autoGrowActiveTextAreas);
-  wifiSecurity?.addEventListener('change', updateWifiPasswordVisibility);
+  qrTypeSelect?.addEventListener('change', () => {
+    autoGrowActiveTextAreas();
+    trackEvent('qr_type_change', { event_category: 'qr', event_label: qrTypeSelect.value });
+  });
+  wifiSecurity?.addEventListener('change', () => {
+    updateWifiPasswordVisibility();
+    trackEvent('qr_wifi_security', { event_category: 'qr', event_label: wifiSecurity.value });
+  });
 
   const urlBtn = document.getElementById('btnUseCurrentUrl');
   const qrTextArea = document.getElementById('qrText');
@@ -471,6 +494,7 @@ function hookInputs() {
       qrTextArea.focus();
       const end = qrTextArea.value.length;
       qrTextArea.setSelectionRange(end, end);
+      trackEvent('qr_use_current_url', { event_category: 'qr' });
     });
   }
 
@@ -480,10 +504,18 @@ function hookInputs() {
       lastLogoFile = null;
       lastLogoDataUrl = null;
       scheduleMakeQR();
+      const file = logoInput.files?.[0];
+      trackEvent('qr_logo_selected', {
+        event_category: 'qr',
+        event_label: file ? file.type || file.name : 'cleared'
+      });
     });
   }
 
-  document.getElementById('btnGen')?.addEventListener('click', () => makeQR());
+  document.getElementById('btnGen')?.addEventListener('click', () => {
+    trackEvent('qr_manual_generate', { event_category: 'qr', event_label: qrTypeSelect?.value || 'url' });
+    makeQR();
+  });
 
   const areas = [
     [document.getElementById('qrText'), 320],

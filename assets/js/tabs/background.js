@@ -1,4 +1,4 @@
-import { loadScript, hexToRgb } from '../utils.js';
+import { loadScript, hexToRgb, trackEvent } from '../utils.js';
 
 let initialized = false;
 let inCanvas;
@@ -221,6 +221,7 @@ async function removeBackground() {
     alert('Upload an image first.');
     return;
   }
+  trackEvent('bg_process', { event_category: 'background', event_label: bgModeSel?.value || 'auto-person' });
   if (bgModeSel.value === 'chroma') {
     chromaKey();
   } else {
@@ -239,6 +240,7 @@ function downloadCutout() {
     a.href = URL.createObjectURL(blob);
     a.download = 'cutout.png';
     a.click();
+    trackEvent('bg_download', { event_category: 'background' });
   }, 'image/png');
 }
 
@@ -251,6 +253,7 @@ function handleModeChange() {
       applyPersonMask();
     }
   }
+  trackEvent('bg_mode_change', { event_category: 'background', event_label: bgModeSel.value });
 }
 
 export async function init() {
@@ -284,6 +287,10 @@ export async function init() {
         drawInput(img);
         basePersonMask = null;
         baseMaskW = baseMaskH = 0;
+        trackEvent('bg_upload', {
+          event_category: 'background',
+          event_label: file.type || file.name || 'image'
+        });
       };
       img.src = reader.result;
     };
@@ -293,10 +300,18 @@ export async function init() {
   personConfidence?.addEventListener('input', () => {
     syncPersonControls();
     applyPersonMask();
+    trackEvent('bg_person_confidence', {
+      event_category: 'background',
+      event_label: personConfidence.value
+    });
   });
   personFeather?.addEventListener('input', () => {
     syncPersonControls();
     applyPersonMask();
+    trackEvent('bg_person_feather', {
+      event_category: 'background',
+      event_label: personFeather.value
+    });
   });
 
   bgModeSel?.addEventListener('change', handleModeChange);

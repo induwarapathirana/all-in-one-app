@@ -130,3 +130,17 @@ export function formatFileSize(bytes) {
   const value = bytes / 1024 ** idx;
   return `${value.toFixed(idx === 0 ? 0 : 1)} ${units[idx]}`;
 }
+
+export function trackEvent(action, params = {}) {
+  if (typeof window === 'undefined') return;
+  try {
+    const payload = { event_category: 'interaction', ...params };
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', action, payload);
+    } else if (Array.isArray(window.dataLayer)) {
+      window.dataLayer.push({ event: action, ...payload });
+    }
+  } catch (err) {
+    console.debug('Analytics event failed', err);
+  }
+}

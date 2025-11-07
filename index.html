@@ -82,10 +82,11 @@
   <main class="container max-w-6xl mx-auto px-4 pb-20">
     <!-- Tabs -->
     <div class="glass p-2 mb-8">
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
         <button data-tab="gen" class="tab-btn tab-active">QR Generator</button>
         <button data-tab="scan" class="tab-btn">QR Scanner</button>
         <button data-tab="bg" class="tab-btn">Background Remover</button>
+        <button data-tab="up" class="tab-btn">AI Upscaler</button>
         <button data-tab="comp" class="tab-btn">Compressor</button>
       </div>
     </div>
@@ -364,6 +365,65 @@
           <div>
             <h3 class="text-sm text-muted mb-2">Cutout</h3>
             <div class="checker p-3"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-up" class="panel hidden grid md:grid-cols-2 gap-6">
+      <div class="glass p-6 space-y-5">
+        <h2 class="section-heading">AI Image Upscaler</h2>
+        <div id="upDrop" class="drop-zone" role="button" tabindex="0">
+          <input id="upFile" type="file" accept="image/png,image/jpeg" class="sr-only" />
+          <div class="drop-zone-icon" aria-hidden="true">⬆️</div>
+          <div class="space-y-1 text-center">
+            <p class="font-semibold">Drop an image here</p>
+            <p class="text-sm text-muted">or <button type="button" class="link-button" id="upBrowse">browse</button> from your device</p>
+            <p class="text-xs text-muted">PNG or JPG up to 15&nbsp;MB. Processing happens via Hugging Face Real‑ESRGAN.</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="text-sm text-muted">Output Scale</span>
+            <select id="upScale" class="form-field mt-1">
+              <option value="2">2×</option>
+              <option value="4" selected>4×</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-sm text-muted">Model Style</span>
+            <select id="upModel" class="form-field mt-1">
+              <option value="general">General Photo</option>
+              <option value="anime">Illustration / Anime</option>
+            </select>
+          </label>
+        </div>
+        <div id="upInfo" class="panel-highlight text-sm text-muted">Upload a JPG or PNG to analyze size and prepare the model.</div>
+        <div class="space-y-3">
+          <div id="upProgress" class="progress-track hidden" aria-hidden="true">
+            <div class="progress-bar" style="width:0%"></div>
+          </div>
+          <p id="upStatus" class="status-line text-sm text-muted">Requires deploying with a <code>HUGGINGFACE_TOKEN</code> for the cloud inference endpoint. Create one at <a class="underline" href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">huggingface.co/settings/tokens</a> and add it to your hosting environment.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button id="btnUpscale" class="btn btn-primary flex-1 min-w-[150px]" disabled>Upscale</button>
+          <button id="btnUpscaleDownload" class="btn btn-secondary flex-1 min-w-[150px]" disabled>Download</button>
+        </div>
+      </div>
+      <div class="glass p-6 space-y-5">
+        <h3 class="section-heading">Preview</h3>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <h4 class="text-sm text-muted mb-2">Original</h4>
+            <div class="checker p-3 min-h-[220px] flex items-center justify-center">
+              <img id="upOriginalPreview" alt="Original preview" class="preview-img hidden" />
+            </div>
+          </div>
+          <div>
+            <h4 class="text-sm text-muted mb-2">Upscaled</h4>
+            <div class="checker p-3 min-h-[220px] flex items-center justify-center">
+              <img id="upResultPreview" alt="Upscaled preview" class="preview-img hidden" />
+            </div>
           </div>
         </div>
       </div>
