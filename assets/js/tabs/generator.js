@@ -29,6 +29,9 @@ let logoScaleInput;
 let logoScaleLabel;
 let logoMarginInput;
 let logoMarginLabel;
+let moduleShapeSelect;
+let cornerShapeSelect;
+let cornerDotShapeSelect;
 
 async function ensureQrLib() {
   if (window.QRCodeStyling) {
@@ -190,18 +193,20 @@ function buildQrData() {
 }
 
 function getQrColors() {
-  const fgMode = fgModeSelect?.value || 'single';
-  const fgColor = document.getElementById('qrFg').value || '#000000';
-  const bgColor = document.getElementById('qrBg').value || '#ffffff';
+  const fgMode = fgModeSelect?.value || 'solid';
+  const fgColor = document.getElementById('qrFg')?.value || '#000000';
+  const bgColor = document.getElementById('qrBg')?.value || '#ffffff';
   if (fgMode === 'gradient') {
+    const alt = document.getElementById('qrFgAlt')?.value || fgColor;
+    const angleDeg = parseFloat(gradientAngle?.value) || 0;
     return {
       gradient: {
-        type: document.getElementById('qrGradientType').value || 'linear',
+        type: 'linear',
         colorStops: [
-          { offset: 0, color: document.getElementById('qrGradientStart').value || '#000000' },
-          { offset: 1, color: document.getElementById('qrGradientEnd').value || '#000000' }
+          { offset: 0, color: fgColor },
+          { offset: 1, color: alt }
         ],
-        rotation: (parseFloat(gradientAngle?.value) || 0) * (Math.PI / 180)
+        rotation: angleDeg * (Math.PI / 180)
       },
       background: bgColor
     };
@@ -210,6 +215,10 @@ function getQrColors() {
     color: fgColor,
     background: bgColor
   };
+}
+
+function getErrorCorrection() {
+  return document.getElementById('qrEC')?.value || 'M';
 }
 
 async function renderQrStyler(size, margin, data) {
@@ -223,11 +232,11 @@ async function renderQrStyler(size, margin, data) {
       type: 'canvas'
     });
   }
-  const moduleShape = document.getElementById('qrModuleShape').value;
-  const cornerShape = document.getElementById('qrCornerShape').value;
-  const cornerInnerShape = document.getElementById('qrCornerInnerShape').value;
-  const cornerColor = document.getElementById('qrCornerColor').value || '#000000';
-  const cornerInnerColor = document.getElementById('qrCornerInnerColor').value || '#000000';
+  const moduleShape = moduleShapeSelect?.value || 'square';
+  const cornerShape = cornerShapeSelect?.value || 'square';
+  const cornerInnerShape = cornerDotShapeSelect?.value || 'square';
+  const cornerColor = document.getElementById('qrCornerColor')?.value || '#000000';
+  const cornerInnerColor = document.getElementById('qrCornerDotColor')?.value || '#000000';
   const colorSpec = getQrColors();
   const dotsOptions = { type: moduleShape };
   if (colorSpec.gradient) {
@@ -246,10 +255,13 @@ async function renderQrStyler(size, margin, data) {
     cornersDotOptions: { type: cornerInnerShape, color: cornerInnerColor },
     backgroundOptions: { color: colorSpec.background },
     imageOptions: {
-      imageSize: parseFloat(document.getElementById('qrLogoScale').value) || 0.22,
+      imageSize: parseFloat(document.getElementById('qrLogoScale')?.value) || 0.22,
       crossOrigin: 'anonymous',
-      margin: parseFloat(document.getElementById('qrLogoMargin').value) || 0,
-      hideBackgroundDots: document.getElementById('qrLogoHideBg').checked
+      margin: parseFloat(document.getElementById('qrLogoMargin')?.value) || 0,
+      hideBackgroundDots: document.getElementById('qrLogoHideDots')?.checked || false
+    },
+    qrOptions: {
+      errorCorrectionLevel: getErrorCorrection()
     }
   });
 
@@ -266,7 +278,10 @@ async function renderQrStyler(size, margin, data) {
 }
 
 async function renderQrFallback(size, margin, data) {
-  const backgroundColor = document.getElementById('qrBg').value || '#ffffff';
+  const fgInput = document.getElementById('qrFg');
+  const bgInput = document.getElementById('qrBg');
+  const backgroundColor = bgInput?.value || '#ffffff';
+  const fgColor = fgInput?.value || '#000000';
   qrDiv.innerHTML = '';
 
   if (qrBackend === 'qrcodejs') {
@@ -275,9 +290,9 @@ async function renderQrFallback(size, margin, data) {
       width: size,
       height: size,
       margin,
-      colorDark: document.getElementById('qrFg').value || '#000000',
+      colorDark: fgColor,
       colorLight: backgroundColor,
-      correctLevel: window.QRCode.CorrectLevel.H
+      correctLevel: window.QRCode.CorrectLevel[getErrorCorrection()] || window.QRCode.CorrectLevel.M
     });
     return qrInstance;
   }
@@ -289,9 +304,10 @@ async function renderQrFallback(size, margin, data) {
       width: size,
       margin,
       color: {
-        dark: document.getElementById('qrFg').value || '#000000',
+        dark: fgColor,
         light: backgroundColor
-      }
+      },
+      errorCorrectionLevel: getErrorCorrection()
     });
     const logoDataUrl = await getLogoDataUrl();
     if (logoDataUrl) {
@@ -322,9 +338,12 @@ async function makeQR() {
 
 async function drawLogo(canvas, dataUrl) {
   if (!canvas) return;
-  const scale = parseFloat(document.getElementById('qrLogoScale').value) || 0.22;
-  const padding = parseFloat(document.getElementById('qrLogoMargin').value) || 0;
-  const hideDots = document.getElementById('qrLogoHideBg').checked;
+  const scaleEl = document.getElementById('qrLogoScale');
+  const marginEl = document.getElementById('qrLogoMargin');
+  const hideDotsEl = document.getElementById('qrLogoHideDots');
+  const scale = parseFloat(scaleEl?.value) || 0.22;
+  const padding = parseFloat(marginEl?.value) || 0;
+  const hideDots = hideDotsEl?.checked;
   const ctx = canvas.getContext('2d');
   const size = canvas.width;
   const logo = new Image();
@@ -497,6 +516,9 @@ export async function init() {
   logoScaleLabel = document.getElementById('qrLogoScaleLabel');
   logoMarginInput = document.getElementById('qrLogoMargin');
   logoMarginLabel = document.getElementById('qrLogoMarginLabel');
+  moduleShapeSelect = document.getElementById('qrDotStyle');
+  cornerShapeSelect = document.getElementById('qrCornerSquareStyle');
+  cornerDotShapeSelect = document.getElementById('qrCornerDotStyle');
 
   scheduleMakeQR = debounce(() => makeQR(), 160);
 
