@@ -256,6 +256,7 @@
       .tab-btn { font-size: 0.9rem; }
       #qrPreview { padding: 1rem; }
     }
+    #qrPreview canvas, #qrPreview img { width: 100%; height: auto; max-width: min(100%, 420px); display: block; }
     /* Prevent iOS zoom on inputs */
     input, select { font-size: 16px; }
   </style>
@@ -392,6 +393,7 @@
             <label class="text-sm text-muted">Mode</label>
             <select id="bgMode" class="form-field mt-1">
               <option value="auto-person">AI: Person Cutout (on-device)</option>
+              <option value="sam-cloud">SAM (cloud)</option>
               <option value="chroma">Chroma‑Key (solid background)</option>
             </select>
           </div>
@@ -415,6 +417,18 @@
               <label class="text-sm text-muted flex items-center justify-between">Edge Smoothness <span id="personFeatherVal" class="text-xs text-muted">2</span></label>
               <input id="personFeather" type="range" min="0" max="5" value="2" />
               <p class="text-xs text-muted mt-1">Higher values soften edges and close tiny gaps.</p>
+            </div>
+          </div>
+          <div id="personOptions" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-slate-300 flex items-center justify-between">Foreground Confidence <span id="personConfidenceVal" class="text-xs text-slate-400">55%</span></label>
+              <input id="personConfidence" type="range" min="35" max="90" value="55" class="w-full" />
+              <p class="text-xs text-slate-400 mt-1">Lower if parts of the subject disappear; raise to clean halos.</p>
+            </div>
+            <div>
+              <label class="text-sm text-slate-300 flex items-center justify-between">Edge Smoothness <span id="personFeatherVal" class="text-xs text-slate-400">2</span></label>
+              <input id="personFeather" type="range" min="0" max="5" value="2" class="w-full" />
+              <p class="text-xs text-slate-400 mt-1">Higher values soften edges and close tiny gaps.</p>
             </div>
           </div>
         </div>
@@ -992,14 +1006,54 @@
 
     async function removeBackground() {
       if (!sourceImg) return alert('Upload an image first.');
+      setBgStatus('');
       if (bgModeSel.value === 'chroma') {
         chromaKey();
+      } else if (bgModeSel.value === 'sam-cloud') {
+        await samCutout();
       } else {
         await personCutout(true);
       }
     }
 
     document.getElementById('btnRemoveBg').addEventListener('click', removeBackground);
+
+    async function samCutout() {
+      const w = inC.width, h = inC.height;
+      if (!w || !h) return;
+      try {
+        setBgLoading(true, 'Contacting SAM…');
+        setBgStatus('Contacting SAM (cloud)…');
+        const payload = inC.toDataURL('image/png');
+        const resp = await fetch('/api/sam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: payload }),
+        });
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error(txt || `SAM request failed (${resp.status})`);
+        }
+        const blob = await resp.blob();
+        const maskImg = await blobToImage(blob);
+        outCtx.clearRect(0, 0, w, h);
+        outCtx.drawImage(inC, 0, 0, w, h);
+        outCtx.globalCompositeOperation = 'destination-in';
+        outCtx.drawImage(maskImg, 0, 0, w, h);
+        outCtx.globalCompositeOperation = 'source-over';
+        setBgStatus('SAM cutout complete.', 'success');
+      } catch (err) {
+        console.error('SAM cutout failed', err);
+        setBgStatus(`SAM (cloud) unavailable: ${err.message || err}. Falling back to on-device cutout.`, 'error');
+        suppressStatusClear = true;
+        bgModeSel.value = 'auto-person';
+        bgModeSel.dispatchEvent(new Event('change'));
+        suppressStatusClear = false;
+        await personCutout(true);
+      } finally {
+        setBgLoading(false);
+      }
+    }
 
     document.getElementById('btnDownloadCutout').addEventListener('click', () => {
       if (!outC.width) return alert('No cutout to download.');
