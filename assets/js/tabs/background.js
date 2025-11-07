@@ -323,13 +323,20 @@ async function samCutout() {
 
     if (!response.ok) {
       let message = `SAM request failed (${response.status})`;
+      let details;
       try {
         const errorBody = await response.json();
         if (errorBody?.error) {
           message = errorBody.error;
         }
+        if (errorBody?.details) {
+          details = errorBody.details;
+        }
       } catch (err) {
         // ignore body parsing errors
+      }
+      if (details) {
+        console.error('SAM error details', details);
       }
       throw new Error(message);
     }

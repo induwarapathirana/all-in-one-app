@@ -78,7 +78,24 @@ export default async function handler(req, res) {
       } catch (err) {
         // ignore JSON parse errors, fall back to raw text
       }
-      res.status(hfResp.status).json({ error: message || 'SAM request failed' });
+
+      let responseBody = message || 'SAM request failed';
+      let rawDetails;
+      if (typeof responseBody === 'string') {
+        const trimmed = responseBody.trim();
+        const looksLikeHtml = /<[^>]+>/.test(trimmed);
+        if (looksLikeHtml) {
+          rawDetails = trimmed.slice(0, 500);
+          responseBody = `Hugging Face request failed (${hfResp.status}). Check your HUGGINGFACE_TOKEN and model configuration.`;
+        }
+      }
+
+      const payload = { error: responseBody };
+      if (rawDetails) {
+        payload.details = rawDetails;
+      }
+
+      res.status(hfResp.status).json(payload);
       return;
     }
 
