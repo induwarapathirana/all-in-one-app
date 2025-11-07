@@ -324,7 +324,10 @@
               <option value="auto-person">AI: Person Cutout (on-device)</option>
               <option value="sam-cloud">SAM (cloud)</option>
               <option value="chroma">Chroma‑Key (solid background)</option>
+              <option value="sam">AI: High-Quality Cutout (SAM via cloud)</option>
             </select>
+            <p id="samNote" class="text-xs text-muted mt-2 hidden">Uses Hugging Face Segment Anything in the cloud. Requires a
+              configured <code>HUGGINGFACE_TOKEN</code> and sends the image to your deployment.</p>
           </div>
           <div id="chromaOptions" class="hidden space-y-3">
             <div>
@@ -353,6 +356,7 @@
           <button id="btnRemoveBg" class="btn btn-primary flex-1 min-w-[150px]">Remove Background</button>
           <button id="btnDownloadCutout" class="btn btn-secondary flex-1 min-w-[150px]">Download PNG</button>
         </div>
+        <p id="bgStatus" class="status-line text-sm text-muted hidden" aria-live="polite"></p>
         <p class="text-sm text-muted">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
       </div>
       <div class="glass p-6 space-y-4">

@@ -15,6 +15,9 @@ let personConfidence;
 let personConfidenceVal;
 let personFeather;
 let personFeatherVal;
+let samNote;
+let statusLine;
+let removeBtn;
 
 let sourceImg;
 let basePersonMask = null;
@@ -27,6 +30,23 @@ const segTmpCanvas = document.createElement('canvas');
 const segTmpCtx = segTmpCanvas.getContext('2d');
 const personMaskCanvas = document.createElement('canvas');
 const personMaskCtx = personMaskCanvas.getContext('2d');
+
+function setStatus(message = '', state = '') {
+  if (!statusLine) return;
+  if (!message) {
+    statusLine.textContent = '';
+    statusLine.classList.add('hidden');
+    delete statusLine.dataset.state;
+    return;
+  }
+  statusLine.textContent = message;
+  statusLine.classList.remove('hidden');
+  if (state) {
+    statusLine.dataset.state = state;
+  } else {
+    delete statusLine.dataset.state;
+  }
+}
 
 function syncPersonControls() {
   if (personConfidenceVal && personConfidence) {
@@ -49,6 +69,7 @@ function drawInput(img) {
   inCtx.clearRect(0, 0, width, height);
   outCtx.clearRect(0, 0, width, height);
   inCtx.drawImage(img, 0, 0, width, height);
+  setStatus('Image loaded. Choose a mode and click Remove Background.');
 }
 
 function smoothAlpha(alpha, width, height, iterations = 1) {
@@ -221,11 +242,28 @@ async function removeBackground() {
     alert('Upload an image first.');
     return;
   }
-  trackEvent('bg_process', { event_category: 'background', event_label: bgModeSel?.value || 'auto-person' });
-  if (bgModeSel.value === 'chroma') {
-    chromaKey();
-  } else {
-    await personCutout(true);
+  const mode = bgModeSel?.value || 'auto-person';
+  trackEvent('bg_process', { event_category: 'background', event_label: mode });
+  removeBtn?.setAttribute('disabled', 'true');
+  try {
+    if (mode === 'chroma') {
+      setStatus('Applying chroma-key mask…', 'busy');
+      chromaKey();
+      setStatus('Chroma-key cutout ready.', 'success');
+    } else if (mode === 'sam') {
+      await samCutout();
+    } else {
+      setStatus('Running on-device person segmentation…', 'busy');
+      await personCutout(true);
+      setStatus('AI cutout ready.', 'success');
+    }
+    trackEvent('bg_success', { event_category: 'background', event_label: mode });
+  } catch (error) {
+    console.error('Background removal failed', error);
+    setStatus(error?.message || 'Background removal failed.', 'error');
+    trackEvent('bg_error', { event_category: 'background', event_label: mode });
+  } finally {
+    removeBtn?.removeAttribute('disabled');
   }
 }
 
@@ -247,6 +285,7 @@ function downloadCutout() {
 function handleModeChange() {
   chromaOptions.classList.toggle('hidden', bgModeSel.value !== 'chroma');
   personOptions.classList.toggle('hidden', bgModeSel.value !== 'auto-person');
+  samNote?.classList.toggle('hidden', bgModeSel.value !== 'sam');
   if (bgModeSel.value === 'auto-person') {
     syncPersonControls();
     if (sourceImg) {
@@ -254,6 +293,75 @@ function handleModeChange() {
     }
   }
   trackEvent('bg_mode_change', { event_category: 'background', event_label: bgModeSel.value });
+}
+
+async function samCutout() {
+  if (!inCanvas || !outCanvas) {
+    throw new Error('Canvas not ready.');
+  }
+  const w = inCanvas.width;
+  const h = inCanvas.height;
+  if (!w || !h) {
+    throw new Error('Load an image before using SAM.');
+  }
+  const dataUrl = inCanvas.toDataURL('image/png');
+  const [, base64 = ''] = dataUrl.split(',');
+  if (!base64) {
+    throw new Error('Unable to export source image for SAM processing.');
+  }
+
+  setStatus('Contacting Hugging Face SAM endpoint…', 'busy');
+
+  try {
+    const response = await fetch('/api/sam', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ image: base64, mime: 'image/png' })
+    });
+
+    if (!response.ok) {
+      let message = `SAM request failed (${response.status})`;
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error) {
+          message = errorBody.error;
+        }
+      } catch (err) {
+        // ignore body parsing errors
+      }
+      throw new Error(message);
+    }
+
+    const result = await response.json();
+    if (!result?.image) {
+      throw new Error('SAM response was missing an image.');
+    }
+
+    await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          outCanvas.width = img.width;
+          outCanvas.height = img.height;
+          outCtx.clearRect(0, 0, img.width, img.height);
+          outCtx.drawImage(img, 0, 0, img.width, img.height);
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = reject;
+      img.src = result.image;
+    });
+
+    setStatus('Cloud SAM cutout ready.', 'success');
+    trackEvent('bg_sam_success', { event_category: 'background' });
+  } catch (error) {
+    trackEvent('bg_sam_error', { event_category: 'background' });
+    throw error;
+  }
 }
 
 export async function init() {
@@ -275,6 +383,9 @@ export async function init() {
   personConfidenceVal = document.getElementById('personConfidenceVal');
   personFeather = document.getElementById('personFeather');
   personFeatherVal = document.getElementById('personFeatherVal');
+  samNote = document.getElementById('samNote');
+  statusLine = document.getElementById('bgStatus');
+  removeBtn = document.getElementById('btnRemoveBg');
 
   document.getElementById('bgFile')?.addEventListener('change', (event) => {
     const file = event.target.files?.[0];
@@ -318,6 +429,6 @@ export async function init() {
   syncPersonControls();
   handleModeChange();
 
-  document.getElementById('btnRemoveBg')?.addEventListener('click', removeBackground);
+  removeBtn?.addEventListener('click', removeBackground);
   document.getElementById('btnDownloadCutout')?.addEventListener('click', downloadCutout);
 }
