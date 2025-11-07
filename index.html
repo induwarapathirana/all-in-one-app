@@ -256,6 +256,19 @@
       .tab-btn { font-size: 0.9rem; }
       #qrPreview { padding: 1rem; }
     }
+    .theme-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    :root[data-theme="light"] .theme-icon-moon { display: none; }
+    :root[data-theme="dark"] .theme-icon-sun { display: none; }
+    small, .hint { color: var(--muted); }
+    footer, #privacy { color: var(--muted); }
+    @media (max-width: 640px) {
+      .tab-btn { font-size: 0.9rem; }
+      #qrPreview { padding: 1rem; }
+    }
+    #qrPreview canvas, #qrPreview img { width: 100%; height: auto; max-width: min(100%, 420px); display: block; }
     /* Prevent iOS zoom on inputs */
     input, select { font-size: 16px; }
   </style>
@@ -533,6 +546,7 @@
             <label class="text-sm text-muted">Mode</label>
             <select id="bgMode" class="form-field mt-1">
               <option value="auto-person">AI: Person Cutout (on-device)</option>
+              <option value="sam-cloud">SAM (cloud)</option>
               <option value="chroma">Chroma‑Key (solid background)</option>
             </select>
           </div>
@@ -1360,14 +1374,54 @@
 
     async function removeBackground() {
       if (!sourceImg) return alert('Upload an image first.');
+      setBgStatus('');
       if (bgModeSel.value === 'chroma') {
         chromaKey();
+      } else if (bgModeSel.value === 'sam-cloud') {
+        await samCutout();
       } else {
         await personCutout(true);
       }
     }
 
     document.getElementById('btnRemoveBg').addEventListener('click', removeBackground);
+
+    async function samCutout() {
+      const w = inC.width, h = inC.height;
+      if (!w || !h) return;
+      try {
+        setBgLoading(true, 'Contacting SAM…');
+        setBgStatus('Contacting SAM (cloud)…');
+        const payload = inC.toDataURL('image/png');
+        const resp = await fetch('/api/sam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: payload }),
+        });
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error(txt || `SAM request failed (${resp.status})`);
+        }
+        const blob = await resp.blob();
+        const maskImg = await blobToImage(blob);
+        outCtx.clearRect(0, 0, w, h);
+        outCtx.drawImage(inC, 0, 0, w, h);
+        outCtx.globalCompositeOperation = 'destination-in';
+        outCtx.drawImage(maskImg, 0, 0, w, h);
+        outCtx.globalCompositeOperation = 'source-over';
+        setBgStatus('SAM cutout complete.', 'success');
+      } catch (err) {
+        console.error('SAM cutout failed', err);
+        setBgStatus(`SAM (cloud) unavailable: ${err.message || err}. Falling back to on-device cutout.`, 'error');
+        suppressStatusClear = true;
+        bgModeSel.value = 'auto-person';
+        bgModeSel.dispatchEvent(new Event('change'));
+        suppressStatusClear = false;
+        await personCutout(true);
+      } finally {
+        setBgLoading(false);
+      }
+    }
 
     document.getElementById('btnDownloadCutout').addEventListener('click', () => {
       if (!outC.width) return alert('No cutout to download.');
