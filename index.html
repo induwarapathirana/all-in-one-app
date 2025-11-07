@@ -35,24 +35,226 @@
   <!-- AdSense (replace ca-pub-########### below when approved) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1909319391447068" crossorigin="anonymous"></script>
 
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('aoi-theme');
+        const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      } catch (err) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #0b1220; --card: #0f172a; --muted: #94a3b8; }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: radial-gradient(1200px 600px at 80% -100px, #1e293b 10%, transparent 50%), radial-gradient(900px 500px at -15% 0%, #0ea5e9 0%, transparent 60%), var(--bg); color: #e2e8f0; }
-    .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); box-shadow: 0 10px 30px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(10px); }
-    .tab-active { background: #111827; border-color: #374151; }
-    .grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .hidden-input { opacity:0; position:absolute; left:-9999px; }
-    .srchighlight { box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 10px 20px rgba(14,165,233,.25); }
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: rgba(15, 23, 42, 0.08);
+      --muted: #475569;
+      --text: #0f172a;
+      --accent: #0ea5e9;
+      --accent-strong: #0284c7;
+      --shadow: 0 28px 48px rgba(15, 23, 42, 0.08);
+      --radius-xl: 1.5rem;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --surface: #111827;
+      --surface-soft: rgba(30, 41, 59, 0.65);
+      --border: rgba(148, 163, 184, 0.22);
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --accent: #22d3ee;
+      --accent-strong: #0ea5e9;
+      --shadow: 0 32px 60px rgba(2, 6, 23, 0.55);
+    }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    a { color: inherit; }
+    .glass {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .tab-btn {
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+      border: 1px solid transparent;
+      width: 100%;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: var(--surface-soft);
+    }
+    .tab-active {
+      background: var(--surface-soft);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+    :root[data-theme="dark"] .tab-active {
+      box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
+    }
+    .panel { align-content: flex-start; }
+    .section-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .text-muted { color: var(--muted); }
+    .quick-action {
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+      border-radius: 0.75rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      transition: background 0.2s ease, border 0.2s ease, color 0.2s ease;
+      cursor: pointer;
+    }
+    .quick-action:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+      color: var(--accent-strong);
+    }
+    .form-field {
+      width: 100%;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 0.85rem;
+      padding: 0.7rem 0.85rem;
+      transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .form-field:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25);
+      background: var(--surface);
+    }
+    .form-field[disabled] {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    input[type="color"].form-field { padding: 0.2rem; height: 44px; }
+    input[type="file"].form-field { padding: 0.5rem 0.85rem; }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+      border-radius: 0.85rem;
+      font-weight: 600;
+      padding: 0.65rem 1.1rem;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary {
+      background: var(--accent-strong);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25);
+    }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-secondary {
+      background: var(--surface-soft);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--surface); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { background: var(--surface-soft); }
+    .brand-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 1.25rem;
+      background: var(--surface-soft);
+      color: var(--accent-strong);
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
     .checker {
-      background-image: linear-gradient(45deg, #94a3b822 25%, transparent 25%),
-                        linear-gradient(-45deg, #94a3b822 25%, transparent 25%),
-                        linear-gradient(45deg, transparent 75%, #94a3b822 75%),
-                        linear-gradient(-45deg, transparent 75%, #94a3b822 75%);
-      background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      background-image: linear-gradient(45deg, rgba(148, 163, 184, 0.25) 25%, transparent 25%),
+                        linear-gradient(-45deg, rgba(148, 163, 184, 0.25) 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.25) 75%),
+                        linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.25) 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+    }
+    #qrPreview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    #qrPreview canvas, #qrPreview img {
+      width: 100%;
+      max-width: 360px;
+      height: auto;
+    }
+    .panel-highlight {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+    .panel-highlight a { color: var(--accent-strong); }
+    .srchighlight { box-shadow: none; }
+    .theme-icon {
+      display: inline-flex;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .theme-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    :root[data-theme="light"] .theme-icon-moon { display: none; }
+    :root[data-theme="dark"] .theme-icon-sun { display: none; }
+    small, .hint { color: var(--muted); }
+    footer, #privacy { color: var(--muted); }
+    @media (max-width: 640px) {
+      .tab-btn { font-size: 0.9rem; }
+      #qrPreview { padding: 1rem; }
     }
     #qrPreview canvas, #qrPreview img { width: 100%; height: auto; max-width: min(100%, 420px); display: block; }
     /* Prevent iOS zoom on inputs */
@@ -65,60 +267,67 @@
   <!-- Mediapipe Selfie Segmentation (for person-background removal) -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
 </head>
-<body class="min-h-screen">
-  <header class="container max-w-6xl mx-auto px-4 py-6">
-    <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex items-center gap-3 justify-center sm:justify-start text-center sm:text-left">
-        <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center"><span class="text-cyan-300 font-black">QR</span></div>
+<body class="min-h-screen antialiased">
+  <header class="container max-w-6xl mx-auto px-4 py-8">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-4 justify-center sm:justify-start text-center sm:text-left">
+        <div class="brand-icon">QR</div>
         <div>
-          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">All‑in‑One QR & Image Toolkit</h1>
-          <p class="text-sm text-slate-400 mt-1 hidden sm:block">Generate, scan, and edit on any device.</p>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">All‑in‑One QR &amp; Image Toolkit</h1>
+          <p class="text-sm text-muted mt-1 hidden sm:block">Generate, scan, and edit on any device.</p>
         </div>
       </div>
-      <div class="flex items-center justify-center sm:justify-end gap-3 text-xs sm:text-sm text-slate-300">
-        <a class="underline/30 hover:underline" href="#faq">FAQ</a>
-        <span class="opacity-50">•</span>
-        <a class="underline/30 hover:underline" href="#privacy">Privacy</a>
+      <div class="flex items-center justify-center sm:justify-end gap-3 text-sm text-muted">
+        <nav class="flex items-center gap-3">
+          <a class="hover:underline" href="#faq">FAQ</a>
+          <span aria-hidden="true">•</span>
+          <a class="hover:underline" href="#privacy">Privacy</a>
+        </nav>
+        <button id="themeToggle" type="button" class="btn btn-ghost text-sm" aria-label="Toggle color theme">
+          <span class="theme-icon theme-icon-sun" aria-hidden="true">☀️</span>
+          <span class="theme-icon theme-icon-moon" aria-hidden="true">🌙</span>
+          <span class="hidden sm:inline theme-label">Light mode</span>
+        </button>
       </div>
     </div>
   </header>
 
   <main class="container max-w-6xl mx-auto px-4 pb-20">
     <!-- Tabs -->
-    <div class="glass rounded-3xl p-2 mb-6">
+    <div class="glass p-2 mb-8">
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">QR Generator</button>
-        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">QR Scanner</button>
-        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">Background Remover</button>
-        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center text-sm md:text-base font-semibold">Compressor</button>
+        <button data-tab="gen" class="tab-btn tab-active">QR Generator</button>
+        <button data-tab="scan" class="tab-btn">QR Scanner</button>
+        <button data-tab="bg" class="tab-btn">Background Remover</button>
+        <button data-tab="comp" class="tab-btn">Compressor</button>
       </div>
     </div>
 
     <!-- Panels -->
     <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6 lg:gap-8">
-      <div class="glass rounded-3xl p-6 space-y-5">
-        <h2 class="text-xl font-bold mb-4">Customize</h2>
+      <div class="glass p-6 space-y-6">
+        <h2 class="section-heading">Customize</h2>
         <div class="space-y-4">
           <label class="block">
-            <div class="flex items-center justify-between gap-3 text-sm text-slate-300">
+            <div class="flex items-center justify-between gap-3 text-sm text-muted">
               <span>Content / URL</span>
-              <button type="button" id="btnUseCurrentUrl" class="shrink-0 inline-flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-900/40 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-cyan-500/70 hover:text-cyan-200">Use page URL</button>
+              <button type="button" id="btnUseCurrentUrl" class="quick-action text-xs sm:text-sm">Use page URL</button>
             </div>
-            <textarea id="qrText" class="mt-2 w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-cyan-500 focus:outline-none p-3 leading-relaxed min-h-[110px] resize-none" rows="3" placeholder="Paste text, a URL, or any message for your QR"></textarea>
+            <textarea id="qrText" class="form-field mt-2 leading-relaxed min-h-[110px] resize-none" rows="3" placeholder="Paste text, a URL, or any message for your QR"></textarea>
           </label>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="grid grid-cols-2 gap-4 md:col-span-2">
               <label class="block">
-                <span class="text-sm text-slate-300">Size</span>
-                <input id="qrSize" type="number" min="128" max="1024" value="320" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+                <span class="text-sm text-muted">Size</span>
+                <input id="qrSize" type="number" min="128" max="1024" value="320" class="form-field mt-1" />
               </label>
               <label class="block">
-                <span class="text-sm text-slate-300">Margin (px)</span>
-                <input id="qrMargin" type="number" min="0" max="16" value="2" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+                <span class="text-sm text-muted">Margin (px)</span>
+                <input id="qrMargin" type="number" min="0" max="16" value="2" class="form-field mt-1" />
               </label>
               <label class="block col-span-2">
-                <span class="text-sm text-slate-300">Error Correction</span>
-                <select id="qrEC" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+                <span class="text-sm text-muted">Error Correction</span>
+                <select id="qrEC" class="form-field mt-1">
                   <option value="L">L (7%)</option>
                   <option value="M" selected>M (15%)</option>
                   <option value="Q">Q (25%)</option>
@@ -127,72 +336,88 @@
               </label>
             </div>
             <label class="block">
-              <span class="text-sm text-slate-300">Foreground</span>
-              <input id="qrFg" type="color" value="#000000" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
+              <span class="text-sm text-muted">Foreground</span>
+              <input id="qrFg" type="color" value="#000000" class="form-field mt-1" />
             </label>
             <label class="block">
-              <span class="text-sm text-slate-300">Background</span>
-              <input id="qrBg" type="color" value="#ffffff" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
+              <span class="text-sm text-muted">Background</span>
+              <input id="qrBg" type="color" value="#ffffff" class="form-field mt-1" />
             </label>
             <label class="block md:col-span-2">
-              <span class="text-sm text-slate-300">Center Logo (optional)</span>
-              <input id="qrLogo" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-              <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
+              <span class="text-sm text-muted">Center Logo (optional)</span>
+              <input id="qrLogo" type="file" accept="image/*" class="form-field mt-1" />
+              <small class="block mt-2 text-xs">Tip: choose H-level error correction when adding logos.</small>
             </label>
           </div>
         </div>
-        <div class="flex flex-wrap gap-3 mt-6">
-          <button id="btnGen" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold text-center">Generate</button>
-          <button id="btnDownloadPNG" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-center">Download PNG</button>
-          <button id="btnDownloadSVG" class="flex-1 min-w-[140px] px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-center">Download SVG</button>
+        <div class="flex flex-wrap gap-3">
+          <button id="btnGen" class="btn btn-primary flex-1 min-w-[140px]">Generate</button>
+          <button id="btnDownloadPNG" class="btn btn-secondary flex-1 min-w-[140px]">Download PNG</button>
+          <button id="btnDownloadSVG" class="btn btn-secondary flex-1 min-w-[140px]">Download SVG</button>
         </div>
       </div>
-      <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center">
-        <h3 class="text-lg font-semibold mb-3">Preview</h3>
-        <div id="qrPreview" class="bg-white/95 p-4 rounded-2xl shadow-inner w-full max-w-xs sm:max-w-sm">
+      <div class="glass p-6 flex flex-col items-center justify-center text-center gap-4">
+        <h3 class="text-lg font-semibold">Preview</h3>
+        <div id="qrPreview" class="w-full max-w-xs sm:max-w-sm">
           <!-- QR renders here -->
         </div>
       </div>
     </section>
 
     <section id="panel-scan" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Scan with Camera</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Scan with Camera</h2>
         <div id="qr-reader" class="rounded-2xl overflow-hidden"></div>
-        <div class="mt-4 flex flex-wrap items-center gap-3">
-          <select id="cameraSelect" class="min-w-[160px] flex-1 rounded-xl bg-slate-900/60 border border-slate-700 p-2 text-sm text-slate-200">
+        <div class="flex flex-wrap items-center gap-3">
+          <select id="cameraSelect" class="form-field min-w-[160px] flex-1">
             <option>Loading cameras…</option>
           </select>
-          <button id="btnScanStart" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Start</button>
-          <button id="btnScanStop" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Stop</button>
+          <button id="btnScanStart" class="btn btn-primary">Start</button>
+          <button id="btnScanStop" class="btn btn-secondary">Stop</button>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Permission prompt will appear the first time. Works best in good lighting.</p>
+        <p class="text-sm text-muted">Permission prompt will appear the first time. Works best in good lighting.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Scan from Image</h2>
-        <input id="scanFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-        <div id="scanResult" class="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-700"></div>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Scan from Image</h2>
+        <input id="scanFile" type="file" accept="image/*" class="form-field" />
+        <div id="scanResult" class="panel-highlight text-sm text-muted min-h-[88px] flex items-center justify-center text-center">Drop a QR image to decode instantly.</div>
       </div>
     </section>
 
     <section id="panel-bg" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Upload Image</h2>
-        <input id="bgFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Upload Image</h2>
+        <input id="bgFile" type="file" accept="image/*" class="form-field" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm text-slate-300">Mode</label>
-            <select id="bgMode" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+            <label class="text-sm text-muted">Mode</label>
+            <select id="bgMode" class="form-field mt-1">
               <option value="auto-person">AI: Person Cutout (on-device)</option>
               <option value="sam-cloud">SAM (cloud)</option>
               <option value="chroma">Chroma‑Key (solid background)</option>
             </select>
           </div>
-          <div id="chromaOptions" class="hidden">
-            <label class="text-sm text-slate-300">Chroma Color</label>
-            <input id="chromaColor" type="color" value="#00ff00" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-            <label class="text-sm text-slate-300 block mt-3">Tolerance</label>
-            <input id="chromaTol" type="range" min="5" max="80" value="18" class="w-full" />
+          <div id="chromaOptions" class="hidden space-y-3">
+            <div>
+              <label class="text-sm text-muted">Chroma Color</label>
+              <input id="chromaColor" type="color" value="#00ff00" class="form-field mt-1" />
+            </div>
+            <div>
+              <label class="text-sm text-muted">Tolerance</label>
+              <input id="chromaTol" type="range" min="5" max="80" value="18" />
+            </div>
+          </div>
+          <div id="personOptions" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-muted flex items-center justify-between">Foreground Confidence <span id="personConfidenceVal" class="text-xs text-muted">55%</span></label>
+              <input id="personConfidence" type="range" min="35" max="90" value="55" />
+              <p class="text-xs text-muted mt-1">Lower if parts of the subject disappear; raise to clean halos.</p>
+            </div>
+            <div>
+              <label class="text-sm text-muted flex items-center justify-between">Edge Smoothness <span id="personFeatherVal" class="text-xs text-muted">2</span></label>
+              <input id="personFeather" type="range" min="0" max="5" value="2" />
+              <p class="text-xs text-muted mt-1">Higher values soften edges and close tiny gaps.</p>
+            </div>
           </div>
           <div id="personOptions" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -207,23 +432,22 @@
             </div>
           </div>
         </div>
-        <div class="flex gap-3 mt-6">
-          <button id="btnRemoveBg" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Remove Background</button>
-          <button id="btnDownloadCutout" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
+        <div class="flex flex-wrap gap-3">
+          <button id="btnRemoveBg" class="btn btn-primary flex-1 min-w-[150px]">Remove Background</button>
+          <button id="btnDownloadCutout" class="btn btn-secondary flex-1 min-w-[150px]">Download PNG</button>
         </div>
-        <p id="bgStatus" class="mt-3 text-sm text-slate-300 hidden"></p>
-        <p class="text-sm text-slate-400 mt-3">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
+        <p class="text-sm text-muted">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Preview</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Preview</h2>
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Input</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
+            <h3 class="text-sm text-muted mb-2">Input</h3>
+            <div class="checker p-3"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Cutout</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
+            <h3 class="text-sm text-muted mb-2">Cutout</h3>
+            <div class="checker p-3"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
         </div>
       </div>
@@ -231,16 +455,16 @@
 
     <!-- Image Compressor Panel -->
     <section id="panel-comp" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Image Compressor</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Image Compressor</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label class="block md:col-span-2">
-            <span class="text-sm text-slate-300">Upload</span>
-            <input id="compFile" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Upload</span>
+            <input id="compFile" type="file" accept="image/*" class="form-field mt-1" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Format</span>
-            <select id="compFormat" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+            <span class="text-sm text-muted">Format</span>
+            <select id="compFormat" class="form-field mt-1">
               <option value="auto">Auto (keep type)</option>
               <option value="image/jpeg">JPEG</option>
               <option value="image/webp">WebP</option>
@@ -248,47 +472,47 @@
             </select>
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Quality (JPEG/WebP)</span>
-            <input id="compQuality" type="range" min="0.4" max="0.95" step="0.05" value="0.8" class="w-full" />
+            <span class="text-sm text-muted">Quality (JPEG/WebP)</span>
+            <input id="compQuality" type="range" min="0.4" max="0.95" step="0.05" value="0.8" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Max Width</span>
-            <input id="compMaxW" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Max Width</span>
+            <input id="compMaxW" type="number" min="64" max="8000" value="1920" class="form-field mt-1" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Max Height</span>
-            <input id="compMaxH" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Max Height</span>
+            <input id="compMaxH" type="number" min="64" max="8000" value="1920" class="form-field mt-1" />
           </label>
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-            <button id="btnCompLocal" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Compress (Local)</button>
-            <button id="btnCompTiny" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Compress with TinyPNG</button>
+            <button id="btnCompLocal" class="btn btn-primary">Compress (Local)</button>
+            <button id="btnCompTiny" class="btn btn-secondary">Compress with TinyPNG</button>
           </div>
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
             <label class="block">
-              <span class="text-sm text-slate-300">TinyPNG Proxy URL (serverless)</span>
-              <input id="tinyProxy" type="url" placeholder="https://your-proxy.example.com/tinypng" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              <span class="text-sm text-muted">TinyPNG Proxy URL (serverless)</span>
+              <input id="tinyProxy" type="url" placeholder="https://your-proxy.example.com/tinypng" class="form-field mt-1" />
             </label>
             <label class="block">
-              <span class="text-sm text-slate-300">TinyPNG API Key (stored in your proxy)</span>
-              <input id="tinyHint" disabled value="Provide via proxy; this field is informational" class="mt-1 w-full rounded-xl bg-slate-900/30 border border-slate-700 p-2 text-slate-500" />
+              <span class="text-sm text-muted">TinyPNG API Key (stored in your proxy)</span>
+              <input id="tinyHint" disabled value="Provide via proxy; this field is informational" class="form-field mt-1" />
             </label>
           </div>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Local compression runs entirely in your browser. TinyPNG requires a small proxy you control to add API credentials and handle CORS.</p>
+        <p class="text-sm text-muted">Local compression runs entirely in your browser. TinyPNG requires a small proxy you control to add API credentials and handle CORS.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Preview & Stats</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Preview &amp; Stats</h2>
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Original</h3>
-            <div class="checker rounded-2xl p-2"><img id="compOrigImg" class="w-full rounded-xl" /></div>
-            <div id="compOrigMeta" class="text-xs text-slate-400 mt-1"></div>
+            <h3 class="text-sm text-muted mb-2">Original</h3>
+            <div class="checker p-3"><img id="compOrigImg" class="w-full rounded-xl" /></div>
+            <div id="compOrigMeta" class="text-xs text-muted mt-1"></div>
           </div>
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Compressed</h3>
-            <div class="checker rounded-2xl p-2"><img id="compOutImg" class="w-full rounded-xl" /></div>
-            <div id="compOutMeta" class="text-xs text-slate-400 mt-1"></div>
-            <div class="mt-3"><button id="btnCompDownload" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download</button></div>
+            <h3 class="text-sm text-muted mb-2">Compressed</h3>
+            <div class="checker p-3"><img id="compOutImg" class="w-full rounded-xl" /></div>
+            <div id="compOutMeta" class="text-xs text-muted mt-1"></div>
+            <div class="mt-3"><button id="btnCompDownload" class="btn btn-secondary">Download</button></div>
           </div>
         </div>
       </div>
@@ -297,7 +521,7 @@
     <!--
     <section id="faq" class="mt-10 glass rounded-3xl p-6">
       <h2 class="text-xl font-bold mb-4">Suggestions & Next Features</h2>
-      <ul class="list-disc pl-5 space-y-2 text-slate-300">
+      <ul class="list-disc pl-5 space-y-2 text-muted">
         <li>QR types: vCard, Wi‑Fi, Email, SMS, Geo, Calendar, and bulk generation (CSV upload).</li>
         <li>Branding: templates, gradient/eye shapes, logo safe‑zone checker, vector (SVG) export with outlines.</li>
         <li>Short links & analytics: integrate a link shortener with scan analytics (UTM, device, geo).</li>
@@ -310,16 +534,56 @@
     </section>
     -->
 
-    <section id="privacy" class="mt-6 text-slate-400 text-sm">
+    <section id="privacy" class="mt-6 text-sm text-muted">
       <p><strong>Privacy:</strong> Everything runs locally in your browser. Camera frames are processed on‑device. If you later enable an external API for background removal, those images will leave the device per that provider’s policy.</p>
     </section>
   </main>
 
-  <footer class="container max-w-6xl mx-auto px-4 py-10 text-center text-slate-400 text-sm">
+  <footer class="container max-w-6xl mx-auto px-4 py-10 text-center text-sm text-muted">
     Built with ❤️ — Frontend‑only MVP. No server required.
   </footer>
 
   <script>
+    // ---------- Theme
+    const root = document.documentElement;
+    const themeToggleEl = document.getElementById('themeToggle');
+    const themeLabelEl = themeToggleEl ? themeToggleEl.querySelector('.theme-label') : null;
+
+    function setTheme(theme, persist = true) {
+      root.dataset.theme = theme;
+      if (persist) {
+        try { localStorage.setItem('aoi-theme', theme); } catch (err) {}
+      }
+      if (themeToggleEl && themeLabelEl) {
+        themeToggleEl.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        themeLabelEl.textContent = theme === 'dark' ? 'Dark mode' : 'Light mode';
+      }
+    }
+
+    if (themeToggleEl && themeLabelEl) {
+      const storedTheme = (() => { try { return localStorage.getItem('aoi-theme'); } catch (err) { return null; } })();
+      const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : { matches: root.dataset.theme === 'dark' };
+      setTheme(root.dataset.theme || storedTheme || (prefersDark.matches ? 'dark' : 'light'), false);
+
+      themeToggleEl.addEventListener('click', () => {
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      });
+
+      const systemHandler = (event) => {
+        const manual = (() => { try { return localStorage.getItem('aoi-theme'); } catch (err) { return null; } })();
+        if (!manual) {
+          setTheme(event.matches ? 'dark' : 'light', false);
+        }
+      };
+
+      if (typeof prefersDark.addEventListener === 'function') {
+        prefersDark.addEventListener('change', systemHandler);
+      } else if (typeof prefersDark.addListener === 'function') {
+        prefersDark.addListener(systemHandler);
+      }
+    }
+
     // ---------- Tabs
     const tabs = document.querySelectorAll('.tab-btn');
     const panels = { gen: document.getElementById('panel-gen'), scan: document.getElementById('panel-scan'), bg: document.getElementById('panel-bg'), comp: document.getElementById('panel-comp') };
@@ -633,7 +897,9 @@
       } catch (e) { alert('Camera error: ' + e.message); }
     }
     function onScanSuccess(decodedText) {
-      scanResultEl.innerHTML = `<div class="srchighlight rounded-xl p-3 bg-slate-900/70 border border-slate-700"><div class="text-xs text-slate-400 mb-1">Result</div><div class="font-mono break-all">${escapeHtml(decodedText)}</div><div class='mt-2'><a class='text-cyan-400 underline' target='_blank' href='${decodedText}'>Open</a></div></div>`;
+      scanResultEl.classList.remove('items-center', 'justify-center', 'text-center', 'text-muted');
+      scanResultEl.classList.add('flex', 'flex-col', 'items-start', 'justify-start', 'gap-2', 'text-left');
+      scanResultEl.innerHTML = `<div class="text-xs text-muted uppercase tracking-wide">Result</div><div class="font-mono break-all">${escapeHtml(decodedText)}</div><div class='mt-2'><a class='underline' target='_blank' rel='noopener noreferrer' href='${decodedText}'>Open</a></div>`;
     }
     function onScanFailure() { /* ignore continuous errors */ }
     document.getElementById('btnScanStart').addEventListener('click', startScanner);
@@ -676,31 +942,6 @@
     const personConfidenceVal = document.getElementById('personConfidenceVal');
     const personFeather = document.getElementById('personFeather');
     const personFeatherVal = document.getElementById('personFeatherVal');
-    const bgStatus = document.getElementById('bgStatus');
-    const btnRemoveBg = document.getElementById('btnRemoveBg');
-    if (btnRemoveBg && !btnRemoveBg.dataset.originalLabel) btnRemoveBg.dataset.originalLabel = btnRemoveBg.textContent || 'Remove Background';
-
-    let suppressStatusClear = false;
-
-    function setBgStatus(message = '', tone = 'info') {
-      if (!bgStatus) return;
-      bgStatus.textContent = message;
-      const toneClasses = ['text-slate-300', 'text-emerald-300', 'text-amber-300', 'text-rose-300'];
-      bgStatus.classList.remove('hidden', ...toneClasses);
-      let cls = 'text-slate-300';
-      if (tone === 'success') cls = 'text-emerald-300';
-      else if (tone === 'warn') cls = 'text-amber-300';
-      else if (tone === 'error') cls = 'text-rose-300';
-      bgStatus.classList.add(cls);
-      if (!message) bgStatus.classList.add('hidden');
-    }
-
-    function setBgLoading(isLoading, label = 'Processing…') {
-      if (!btnRemoveBg) return;
-      btnRemoveBg.disabled = !!isLoading;
-      btnRemoveBg.textContent = isLoading ? label : (btnRemoveBg.dataset.originalLabel || 'Remove Background');
-      btnRemoveBg.classList.toggle('opacity-60', !!isLoading);
-    }
 
     function syncPersonControls() {
       if (personConfidenceVal) personConfidenceVal.textContent = `${personConfidence.value}%`;
@@ -714,7 +955,6 @@
         syncPersonControls();
         if (sourceImg) applyPersonMask();
       }
-      if (!suppressStatusClear && bgModeSel.value !== 'sam-cloud') setBgStatus('');
     });
     syncPersonControls();
 
