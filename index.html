@@ -35,169 +35,334 @@
   <!-- AdSense (replace ca-pub-########### below when approved) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1909319391447068" crossorigin="anonymous"></script>
 
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem('aoi-theme');
+        const prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      } catch (err) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root { --bg: #0b1220; --card: #0f172a; --muted: #94a3b8; }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: radial-gradient(1200px 600px at 80% -100px, #1e293b 10%, transparent 50%), radial-gradient(900px 500px at -15% 0%, #0ea5e9 0%, transparent 60%), var(--bg); color: #e2e8f0; }
-    .glass { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); box-shadow: 0 10px 30px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(10px); }
-    .tab-active { background: #111827; border-color: #374151; }
-    .grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .hidden-input { opacity:0; position:absolute; left:-9999px; }
-    .srchighlight { box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 10px 20px rgba(14,165,233,.25); }
-    .checker {
-      background-image: linear-gradient(45deg, #94a3b822 25%, transparent 25%),
-                        linear-gradient(-45deg, #94a3b822 25%, transparent 25%),
-                        linear-gradient(45deg, transparent 75%, #94a3b822 75%),
-                        linear-gradient(-45deg, transparent 75%, #94a3b822 75%);
-      background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0;
-    }
-    /* Prevent iOS zoom on inputs */
-    input, select { font-size: 16px; }
-  </style>
-  <!-- QR Code Generator (classic) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <!-- QR Scanner -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <!-- Mediapipe Selfie Segmentation (for person-background removal) -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
-<body class="min-h-screen">
-  <header class="container mx-auto px-4 py-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center"><span class="text-cyan-300 font-black">QR</span></div>
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">All‑in‑One QR & Image Toolkit</h1>
+<body class="min-h-screen antialiased">
+  <header class="container max-w-6xl mx-auto px-4 py-8">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-4 justify-center sm:justify-start text-center sm:text-left">
+        <div class="brand-icon">QR</div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">All‑in‑One QR &amp; Image Toolkit</h1>
+          <p class="text-sm text-muted mt-1 hidden sm:block">Generate, scan, and edit on any device.</p>
+        </div>
       </div>
-      <div class="hidden md:flex items-center gap-2 text-sm text-slate-300">
-        <a class="underline/30 hover:underline" href="#faq">FAQ</a>
-        <span class="opacity-50">•</span>
-        <a class="underline/30 hover:underline" href="#privacy">Privacy</a>
+      <div class="flex items-center justify-center sm:justify-end gap-3 text-sm text-muted">
+        <nav class="flex items-center gap-3">
+          <a class="hover:underline" href="#faq">FAQ</a>
+          <span aria-hidden="true">•</span>
+          <a class="hover:underline" href="#privacy">Privacy</a>
+        </nav>
+        <button id="themeToggle" type="button" class="btn btn-ghost text-sm" aria-label="Toggle color theme">
+          <span class="theme-icon theme-icon-sun" aria-hidden="true">☀️</span>
+          <span class="theme-icon theme-icon-moon" aria-hidden="true">🌙</span>
+          <span class="hidden sm:inline theme-label">Light mode</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="container mx-auto px-4 pb-20">
+  <main class="container max-w-6xl mx-auto px-4 pb-20">
     <!-- Tabs -->
-    <div class="glass rounded-3xl p-2 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-        <button data-tab="gen" class="tab-btn tab-active rounded-2xl py-3 px-4 text-center font-semibold">QR Generator</button>
-        <button data-tab="scan" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">QR Scanner</button>
-        <button data-tab="bg" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Background Remover</button>
-        <button data-tab="comp" class="tab-btn rounded-2xl py-3 px-4 text-center font-semibold">Compressor</button>
+    <div class="glass p-2 mb-8">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button data-tab="gen" class="tab-btn tab-active">QR Generator</button>
+        <button data-tab="scan" class="tab-btn">QR Scanner</button>
+        <button data-tab="bg" class="tab-btn">Background Remover</button>
+        <button data-tab="comp" class="tab-btn">Compressor</button>
       </div>
     </div>
 
     <!-- Panels -->
-    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Customize</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label class="block">
-            <span class="text-sm text-slate-300">Content / URL</span>
-            <textarea id="qrText" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-3" rows="4" placeholder="https://your-link.com"></textarea>
-          </label>
-          <div class="grid grid-cols-2 gap-4">
+    <section id="panel-gen" class="panel grid md:grid-cols-2 gap-6 lg:gap-8">
+      <div class="glass p-6 space-y-6">
+        <h2 class="section-heading">Customize</h2>
+        <div class="space-y-6">
+          <div class="grid gap-4">
             <label class="block">
-              <span class="text-sm text-slate-300">Size</span>
-              <input id="qrSize" type="number" min="128" max="1024" value="320" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            </label>
-            <label class="block">
-              <span class="text-sm text-slate-300">Margin (px)</span>
-              <input id="qrMargin" type="number" min="0" max="16" value="2" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            </label>
-            <label class="block col-span-2">
-              <span class="text-sm text-slate-300">Error Correction</span>
-              <select id="qrEC" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
-                <option value="L">L (7%)</option>
-                <option value="M" selected>M (15%)</option>
-                <option value="Q">Q (25%)</option>
-                <option value="H">H (30%)</option>
+              <span class="text-sm text-muted">QR Type</span>
+              <select id="qrType" class="form-field mt-1" data-qr-input>
+                <option value="url" selected>Link / Text</option>
+                <option value="wifi">Wi‑Fi</option>
+                <option value="email">Email</option>
+                <option value="sms">SMS</option>
+                <option value="phone">Phone</option>
               </select>
             </label>
           </div>
-          <label class="block">
-            <span class="text-sm text-slate-300">Foreground</span>
-            <input id="qrFg" type="color" value="#000000" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-          </label>
-          <label class="block">
-            <span class="text-sm text-slate-300">Background</span>
-            <input id="qrBg" type="color" value="#ffffff" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-          </label>
-          <label class="block col-span-2">
-            <span class="text-sm text-slate-300">Center Logo (optional)</span>
-            <input id="qrLogo" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-            <small class="text-slate-400">Tip: choose H-level error correction when adding logos.</small>
-          </label>
+          <div id="qrTypeFields" class="space-y-5">
+            <div class="qr-type-group space-y-3" data-type="url">
+              <label class="block">
+                <div class="flex items-center justify-between gap-3 text-sm text-muted">
+                  <span>Content / URL</span>
+                  <button type="button" id="btnUseCurrentUrl" class="quick-action text-xs sm:text-sm">Use page URL</button>
+                </div>
+                <textarea id="qrText" class="form-field mt-2 leading-relaxed min-h-[110px] resize-none" rows="3" placeholder="Paste text, a URL, or any message for your QR" data-qr-input></textarea>
+              </label>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="wifi">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="block">
+                  <span class="text-sm text-muted">Network Name (SSID)</span>
+                  <input id="qrWifiSsid" type="text" class="form-field mt-1" placeholder="CafeWiFi" data-qr-input />
+                </label>
+                <label class="block">
+                  <span class="text-sm text-muted">Security</span>
+                  <select id="qrWifiSecurity" class="form-field mt-1" data-qr-input>
+                    <option value="WPA" selected>WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">None</option>
+                  </select>
+                </label>
+                <label class="block" data-wifi-pass>
+                  <span class="text-sm text-muted">Password</span>
+                  <input id="qrWifiPassword" type="text" class="form-field mt-1" placeholder="password" data-qr-input />
+                </label>
+                <label class="flex items-center gap-2 text-sm text-muted">
+                  <input id="qrWifiHidden" type="checkbox" class="h-4 w-4" data-qr-input />
+                  <span>Hidden network</span>
+                </label>
+              </div>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="email">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">To</span>
+                  <input id="qrEmailTo" type="email" class="form-field mt-1" placeholder="hello@example.com" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">Subject</span>
+                  <input id="qrEmailSubject" type="text" class="form-field mt-1" placeholder="Let's connect" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">Message</span>
+                  <textarea id="qrEmailBody" class="form-field mt-1 min-h-[100px] resize-none" rows="3" placeholder="Hi there…" data-qr-input></textarea>
+                </label>
+              </div>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="sms">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="block">
+                  <span class="text-sm text-muted">Phone Number</span>
+                  <input id="qrSmsNumber" type="tel" class="form-field mt-1" placeholder="1234567890" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted">Message</span>
+                  <textarea id="qrSmsMessage" class="form-field mt-1 min-h-[80px] resize-none" rows="3" placeholder="Let's chat soon" data-qr-input></textarea>
+                </label>
+              </div>
+            </div>
+            <div class="qr-type-group hidden space-y-3" data-type="phone">
+              <label class="block">
+                <span class="text-sm text-muted">Phone Number</span>
+                <input id="qrPhoneNumber" type="tel" class="form-field mt-1" placeholder="1234567890" data-qr-input />
+              </label>
+            </div>
+          </div>
+          <div class="space-y-4 pt-2 border-t border-[color:var(--border)]">
+            <h3 class="text-sm font-semibold uppercase tracking-wide text-muted">Design</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-sm text-muted">Size</span>
+                <input id="qrSize" type="number" min="128" max="1024" value="320" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Margin (px)</span>
+                <input id="qrMargin" type="number" min="0" max="24" value="2" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Error Correction</span>
+                <select id="qrEC" class="form-field mt-1" data-qr-input>
+                  <option value="L">L (7%)</option>
+                  <option value="M" selected>M (15%)</option>
+                  <option value="Q">Q (25%)</option>
+                  <option value="H">H (30%)</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Module Style</span>
+                <select id="qrDotStyle" class="form-field mt-1" data-qr-input>
+                  <option value="square">Square</option>
+                  <option value="rounded">Rounded</option>
+                  <option value="dots">Dots</option>
+                  <option value="classy">Classy</option>
+                  <option value="classy-rounded">Classy Rounded</option>
+                  <option value="extra-rounded">Extra Rounded</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Square Style</span>
+                <select id="qrCornerSquareStyle" class="form-field mt-1" data-qr-input>
+                  <option value="square">Square</option>
+                  <option value="extra-rounded">Extra Rounded</option>
+                  <option value="rounded">Rounded</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Dot Style</span>
+                <select id="qrCornerDotStyle" class="form-field mt-1" data-qr-input>
+                  <option value="square">Square</option>
+                  <option value="dot">Dot</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Module Color</span>
+                <div class="grid grid-cols-[auto,1fr] gap-2 items-center mt-1">
+                  <input id="qrFg" type="color" value="#000000" class="form-field p-0 h-11" data-qr-input />
+                  <select id="qrFgMode" class="form-field" data-qr-input>
+                    <option value="solid" selected>Solid</option>
+                    <option value="gradient">Linear Gradient</option>
+                  </select>
+                </div>
+              </label>
+              <div id="qrGradientOpts" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="block">
+                  <span class="text-sm text-muted">Second Color</span>
+                  <input id="qrFgAlt" type="color" value="#0ea5e9" class="form-field mt-1" data-qr-input />
+                </label>
+                <label class="block md:col-span-2">
+                  <span class="text-sm text-muted flex items-center justify-between">Angle <span id="qrGradientAngleVal" class="text-xs text-muted">45°</span></span>
+                  <input id="qrGradientAngle" type="range" min="0" max="360" value="45" data-qr-input />
+                </label>
+              </div>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Color</span>
+                <input id="qrCornerColor" type="color" value="#0f9d58" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Corner Dot Color</span>
+                <input id="qrCornerDotColor" type="color" value="#0f9d58" class="form-field mt-1" data-qr-input />
+              </label>
+              <label class="block">
+                <span class="text-sm text-muted">Background</span>
+                <input id="qrBg" type="color" value="#ffffff" class="form-field mt-1" data-qr-input />
+              </label>
+            </div>
+            <div class="space-y-4">
+              <label class="block">
+                <span class="text-sm text-muted">Center Logo (optional)</span>
+                <input id="qrLogo" type="file" accept="image/*" class="form-field mt-1" data-qr-input />
+                <small class="block mt-2 text-xs text-muted">Tip: choose H-level error correction when adding logos so the code stays readable.</small>
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="block">
+                  <span class="text-sm text-muted flex items-center justify-between">Logo Size <span id="qrLogoScaleLabel" class="text-xs text-muted">22%</span></span>
+                  <input id="qrLogoScale" type="range" min="0.15" max="0.35" step="0.01" value="0.22" data-qr-input />
+                </label>
+                <label class="block">
+                  <span class="text-sm text-muted flex items-center justify-between">Logo Margin <span id="qrLogoMarginLabel" class="text-xs text-muted">6px</span></span>
+                  <input id="qrLogoMargin" type="range" min="0" max="24" step="1" value="6" data-qr-input />
+                </label>
+                <label class="flex items-center gap-3 text-sm text-muted">
+                  <input id="qrLogoHideDots" type="checkbox" class="h-4 w-4" data-qr-input />
+                  <span>Hide dots behind logo</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="flex gap-3 mt-6">
-          <button id="btnGen" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Generate</button>
-          <button id="btnDownloadPNG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
-          <button id="btnDownloadSVG" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download SVG</button>
+        <div class="flex flex-wrap gap-3">
+          <button id="btnGen" class="btn btn-primary flex-1 min-w-[140px]">Generate</button>
+          <button id="btnDownloadPNG" class="btn btn-secondary flex-1 min-w-[140px]">Download PNG</button>
+          <button id="btnDownloadSVG" class="btn btn-secondary flex-1 min-w-[140px]">Download SVG</button>
         </div>
       </div>
-      <div class="glass rounded-3xl p-6 flex flex-col items-center justify-center">
-        <h3 class="text-lg font-semibold mb-3">Preview</h3>
-        <div id="qrPreview" class="bg-white p-3 rounded-2xl">
+      <div class="glass p-6 flex flex-col items-center justify-center text-center gap-4">
+        <h3 class="text-lg font-semibold">Preview</h3>
+        <div id="qrPreview" class="w-full max-w-xs sm:max-w-sm">
           <!-- QR renders here -->
         </div>
       </div>
     </section>
 
     <section id="panel-scan" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Scan with Camera</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Scan with Camera</h2>
         <div id="qr-reader" class="rounded-2xl overflow-hidden"></div>
-        <div class="mt-4 flex gap-3">
-          <button id="btnScanStart" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Start</button>
-          <button id="btnScanStop" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Stop</button>
+        <div class="flex flex-wrap items-center gap-3">
+          <select id="cameraSelect" class="form-field min-w-[160px] flex-1">
+            <option>Loading cameras…</option>
+          </select>
+          <button id="btnScanStart" class="btn btn-primary">Start</button>
+          <button id="btnScanStop" class="btn btn-secondary">Stop</button>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Permission prompt will appear the first time. Works best in good lighting.</p>
+        <p class="text-sm text-muted">Permission prompt will appear the first time. Works best in good lighting.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Scan from Image</h2>
-        <input id="scanFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-        <div id="scanResult" class="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-700"></div>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Scan from Image</h2>
+        <input id="scanFile" type="file" accept="image/*" class="form-field" />
+        <div id="scanResult" class="panel-highlight text-sm text-muted min-h-[88px] flex items-center justify-center text-center">Drop a QR image to decode instantly.</div>
       </div>
     </section>
 
     <section id="panel-bg" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Upload Image</h2>
-        <input id="bgFile" type="file" accept="image/*" class="w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Upload Image</h2>
+        <input id="bgFile" type="file" accept="image/*" class="form-field" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm text-slate-300">Mode</label>
-            <select id="bgMode" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+            <label class="text-sm text-muted">Mode</label>
+            <select id="bgMode" class="form-field mt-1">
               <option value="auto-person">AI: Person Cutout (on-device)</option>
               <option value="chroma">Chroma‑Key (solid background)</option>
             </select>
           </div>
-          <div id="chromaOptions" class="hidden">
-            <label class="text-sm text-slate-300">Chroma Color</label>
-            <input id="chromaColor" type="color" value="#00ff00" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2 h-11" />
-            <label class="text-sm text-slate-300 block mt-3">Tolerance</label>
-            <input id="chromaTol" type="range" min="5" max="80" value="18" class="w-full" />
+          <div id="chromaOptions" class="hidden space-y-3">
+            <div>
+              <label class="text-sm text-muted">Chroma Color</label>
+              <input id="chromaColor" type="color" value="#00ff00" class="form-field mt-1" />
+            </div>
+            <div>
+              <label class="text-sm text-muted">Tolerance</label>
+              <input id="chromaTol" type="range" min="5" max="80" value="18" />
+            </div>
+          </div>
+          <div id="personOptions" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-muted flex items-center justify-between">Foreground Confidence <span id="personConfidenceVal" class="text-xs text-muted">55%</span></label>
+              <input id="personConfidence" type="range" min="35" max="90" value="55" />
+              <p class="text-xs text-muted mt-1">Lower if parts of the subject disappear; raise to clean halos.</p>
+            </div>
+            <div>
+              <label class="text-sm text-muted flex items-center justify-between">Edge Smoothness <span id="personFeatherVal" class="text-xs text-muted">2</span></label>
+              <input id="personFeather" type="range" min="0" max="5" value="2" />
+              <p class="text-xs text-muted mt-1">Higher values soften edges and close tiny gaps.</p>
+            </div>
           </div>
         </div>
-        <div class="flex gap-3 mt-6">
-          <button id="btnRemoveBg" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Remove Background</button>
-          <button id="btnDownloadCutout" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download PNG</button>
+        <div class="flex flex-wrap gap-3">
+          <button id="btnRemoveBg" class="btn btn-primary flex-1 min-w-[150px]">Remove Background</button>
+          <button id="btnDownloadCutout" class="btn btn-secondary flex-1 min-w-[150px]">Download PNG</button>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
+        <p class="text-sm text-muted">Tip: For logos/screenshots with flat colors, try <em>Chroma‑Key</em>. For portraits, use <em>AI: Person Cutout</em>.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Preview</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Preview</h2>
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Input</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
+            <h3 class="text-sm text-muted mb-2">Input</h3>
+            <div class="checker p-3"><canvas id="inCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Cutout</h3>
-            <div class="checker rounded-2xl p-2"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
+            <h3 class="text-sm text-muted mb-2">Cutout</h3>
+            <div class="checker p-3"><canvas id="outCanvas" class="w-full rounded-xl"></canvas></div>
           </div>
         </div>
       </div>
@@ -205,16 +370,16 @@
 
     <!-- Image Compressor Panel -->
     <section id="panel-comp" class="panel hidden grid md:grid-cols-2 gap-6">
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Image Compressor</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Image Compressor</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label class="block md:col-span-2">
-            <span class="text-sm text-slate-300">Upload</span>
-            <input id="compFile" type="file" accept="image/*" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Upload</span>
+            <input id="compFile" type="file" accept="image/*" class="form-field mt-1" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Format</span>
-            <select id="compFormat" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2">
+            <span class="text-sm text-muted">Format</span>
+            <select id="compFormat" class="form-field mt-1">
               <option value="auto">Auto (keep type)</option>
               <option value="image/jpeg">JPEG</option>
               <option value="image/webp">WebP</option>
@@ -222,47 +387,47 @@
             </select>
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Quality (JPEG/WebP)</span>
-            <input id="compQuality" type="range" min="0.4" max="0.95" step="0.05" value="0.8" class="w-full" />
+            <span class="text-sm text-muted">Quality (JPEG/WebP)</span>
+            <input id="compQuality" type="range" min="0.4" max="0.95" step="0.05" value="0.8" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Max Width</span>
-            <input id="compMaxW" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Max Width</span>
+            <input id="compMaxW" type="number" min="64" max="8000" value="1920" class="form-field mt-1" />
           </label>
           <label class="block">
-            <span class="text-sm text-slate-300">Max Height</span>
-            <input id="compMaxH" type="number" min="64" max="8000" value="1920" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+            <span class="text-sm text-muted">Max Height</span>
+            <input id="compMaxH" type="number" min="64" max="8000" value="1920" class="form-field mt-1" />
           </label>
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-            <button id="btnCompLocal" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-semibold">Compress (Local)</button>
-            <button id="btnCompTiny" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Compress with TinyPNG</button>
+            <button id="btnCompLocal" class="btn btn-primary">Compress (Local)</button>
+            <button id="btnCompTiny" class="btn btn-secondary">Compress with TinyPNG</button>
           </div>
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
             <label class="block">
-              <span class="text-sm text-slate-300">TinyPNG Proxy URL (serverless)</span>
-              <input id="tinyProxy" type="url" placeholder="https://your-proxy.example.com/tinypng" class="mt-1 w-full rounded-xl bg-slate-900/60 border border-slate-700 p-2" />
+              <span class="text-sm text-muted">TinyPNG Proxy URL (serverless)</span>
+              <input id="tinyProxy" type="url" placeholder="https://your-proxy.example.com/tinypng" class="form-field mt-1" />
             </label>
             <label class="block">
-              <span class="text-sm text-slate-300">TinyPNG API Key (stored in your proxy)</span>
-              <input id="tinyHint" disabled value="Provide via proxy; this field is informational" class="mt-1 w-full rounded-xl bg-slate-900/30 border border-slate-700 p-2 text-slate-500" />
+              <span class="text-sm text-muted">TinyPNG API Key (stored in your proxy)</span>
+              <input id="tinyHint" disabled value="Provide via proxy; this field is informational" class="form-field mt-1" />
             </label>
           </div>
         </div>
-        <p class="text-sm text-slate-400 mt-3">Local compression runs entirely in your browser. TinyPNG requires a small proxy you control to add API credentials and handle CORS.</p>
+        <p class="text-sm text-muted">Local compression runs entirely in your browser. TinyPNG requires a small proxy you control to add API credentials and handle CORS.</p>
       </div>
-      <div class="glass rounded-3xl p-6">
-        <h2 class="text-xl font-bold mb-4">Preview & Stats</h2>
+      <div class="glass p-6 space-y-4">
+        <h2 class="section-heading">Preview &amp; Stats</h2>
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Original</h3>
-            <div class="checker rounded-2xl p-2"><img id="compOrigImg" class="w-full rounded-xl" /></div>
-            <div id="compOrigMeta" class="text-xs text-slate-400 mt-1"></div>
+            <h3 class="text-sm text-muted mb-2">Original</h3>
+            <div class="checker p-3"><img id="compOrigImg" class="w-full rounded-xl" /></div>
+            <div id="compOrigMeta" class="text-xs text-muted mt-1"></div>
           </div>
           <div>
-            <h3 class="text-sm text-slate-300 mb-2">Compressed</h3>
-            <div class="checker rounded-2xl p-2"><img id="compOutImg" class="w-full rounded-xl" /></div>
-            <div id="compOutMeta" class="text-xs text-slate-400 mt-1"></div>
-            <div class="mt-3"><button id="btnCompDownload" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold">Download</button></div>
+            <h3 class="text-sm text-muted mb-2">Compressed</h3>
+            <div class="checker p-3"><img id="compOutImg" class="w-full rounded-xl" /></div>
+            <div id="compOutMeta" class="text-xs text-muted mt-1"></div>
+            <div class="mt-3"><button id="btnCompDownload" class="btn btn-secondary">Download</button></div>
           </div>
         </div>
       </div>
@@ -271,7 +436,7 @@
     <!--
     <section id="faq" class="mt-10 glass rounded-3xl p-6">
       <h2 class="text-xl font-bold mb-4">Suggestions & Next Features</h2>
-      <ul class="list-disc pl-5 space-y-2 text-slate-300">
+      <ul class="list-disc pl-5 space-y-2 text-muted">
         <li>QR types: vCard, Wi‑Fi, Email, SMS, Geo, Calendar, and bulk generation (CSV upload).</li>
         <li>Branding: templates, gradient/eye shapes, logo safe‑zone checker, vector (SVG) export with outlines.</li>
         <li>Short links & analytics: integrate a link shortener with scan analytics (UTM, device, geo).</li>
@@ -284,463 +449,15 @@
     </section>
     -->
 
-    <section id="privacy" class="mt-6 text-slate-400 text-sm">
+    <section id="privacy" class="mt-6 text-sm text-muted">
       <p><strong>Privacy:</strong> Everything runs locally in your browser. Camera frames are processed on‑device. If you later enable an external API for background removal, those images will leave the device per that provider’s policy.</p>
     </section>
   </main>
 
-  <footer class="container mx-auto px-4 py-10 text-center text-slate-400 text-sm">
+  <footer class="container max-w-6xl mx-auto px-4 py-10 text-center text-sm text-muted">
     Built with ❤️ — Frontend‑only MVP. No server required.
   </footer>
 
-  <script>
-    // ---------- Tabs
-    const tabs = document.querySelectorAll('.tab-btn');
-    const panels = { gen: document.getElementById('panel-gen'), scan: document.getElementById('panel-scan'), bg: document.getElementById('panel-bg'), comp: document.getElementById('panel-comp') };
-    tabs.forEach(btn => btn.addEventListener('click', () => {
-      tabs.forEach(b => b.classList.remove('tab-active'));
-      btn.classList.add('tab-active');
-      const key = btn.dataset.tab;
-      Object.entries(panels).forEach(([k, el]) => el.classList.toggle('hidden', k !== key));
-    }));
-
-    // ---------- QR GENERATOR
-    let qr; const qrDiv = document.getElementById('qrPreview');
-
-    async function ensureQrLib(){
-      // Prefer classic qrcodejs global (QRCode)
-      if (window.QRCode) return 'qrcodejs';
-
-      // Helper to load a script tag with fallback
-      const loadScript = (src) => new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = src; s.async = true; s.crossOrigin = 'anonymous';
-        s.onload = () => resolve(true);
-        s.onerror = () => reject(new Error('Failed to load ' + src));
-        document.head.appendChild(s);
-      });
-
-      // Try multiple CDNs for qrcodejs (global QRCode)
-      const qrcodejsCDNs = [
-        'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
-        'https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js',
-        'https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js'
-      ];
-      for (const url of qrcodejsCDNs) {
-        try { await loadScript(url); if (window.QRCode) return 'qrcodejs'; } catch(e){ console.warn('CDN fail', url); }
-      }
-
-      // Fallback: "qrcode" npm browser bundle (global window.qrcode)
-      const qrcodeBundleCDNs = [
-        'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js',
-        'https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js'
-      ];
-      for (const url of qrcodeBundleCDNs) {
-        try { await loadScript(url); if (window.qrcode) return 'qrcode-module'; } catch(e){ console.warn('CDN fail', url); }
-      }
-
-      throw new Error('No QR library could be loaded (network/CSP?)');
-    }
-
-    async function makeQR() {
-      const backend = await ensureQrLib();
-      const text = document.getElementById('qrText').value || 'https://example.com';
-      const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
-      const fg = document.getElementById('qrFg').value || '#000000';
-      const bg = document.getElementById('qrBg').value || '#ffffff';
-      const ec = (document.getElementById('qrEC').value || 'M');
-      const margin = parseInt(document.getElementById('qrMargin').value, 10) || 2;
-
-      qrDiv.innerHTML = '';
-
-      let canvasEl;
-      if (backend === 'qrcodejs') {
-        // classic qrcodejs path
-        qr = new QRCode(qrDiv, {
-          text, width: size, height: size,
-          colorDark: fg, colorLight: bg,
-          correctLevel: QRCode.CorrectLevel[ec] || QRCode.CorrectLevel.M,
-        });
-        canvasEl = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
-      } else {
-        // fallback to qrcode (toCanvas)
-        canvasEl = document.createElement('canvas');
-        canvasEl.width = size; canvasEl.height = size;
-        qrDiv.appendChild(canvasEl);
-        await window.qrcode.toCanvas(canvasEl, text, {
-          width: size,
-          color: { dark: fg, light: bg },
-          errorCorrectionLevel: ec
-        });
-      }
-
-      // Apply margin by wrapping in padding
-      qrDiv.style.padding = margin + 'px';
-
-      // Choice 3A — Auto-convert <img> → <canvas> when a logo is selected,
-      // then draw a rounded (A) logo on top.
-      let file = document.getElementById('qrLogo').files?.[0];
-      if (!canvasEl) return;
-
-      // If the QR output is an <img> and a logo is chosen, convert to canvas first
-      if (file && canvasEl.tagName !== 'CANVAS') {
-        const imgEl = canvasEl;
-        const c = document.createElement('canvas');
-        const w = imgEl.naturalWidth || size;
-        const h = imgEl.naturalHeight || size;
-        c.width = w; c.height = h;
-        const ctx0 = c.getContext('2d');
-        ctx0.drawImage(imgEl, 0, 0, w, h);
-        // Replace DOM so downstream code sees a canvas
-        qrDiv.innerHTML = '';
-        qrDiv.appendChild(c);
-        canvasEl = c;
-      }
-
-      // If no logo file, we are done
-      if (!file) return;
-
-      // Draw rounded logo with white pad
-      const reader = new FileReader();
-      reader.onload = () => {
-        const logo = new Image();
-        logo.onload = () => {
-          if (!canvasEl || canvasEl.tagName !== 'CANVAS') return; // safety
-          const ctx = canvasEl.getContext('2d');
-          const s = Math.min(canvasEl.width, canvasEl.height);
-          const target = Math.floor(s * 0.2); // 20%
-          const x = (canvasEl.width - target) / 2;
-          const y = (canvasEl.height - target) / 2;
-          const r = 12;
-          ctx.save();
-          ctx.fillStyle = '#ffffffcc';
-          roundRect(ctx, x - 8, y - 8, target + 16, target + 16, r);
-          ctx.fill();
-          ctx.restore();
-          ctx.drawImage(logo, x, y, target, target);
-        };
-        logo.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function roundRect(ctx, x, y, w, h, r) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + w, y, x + w, y + h, r);
-      ctx.arcTo(x + w, y + h, x, y + h, r);
-      ctx.arcTo(x, y + h, x, y, r);
-      ctx.arcTo(x, y, x + w, y, r);
-      ctx.closePath();
-    }
-
-    document.getElementById('btnGen').addEventListener('click', () => makeQR());
-    // initial render (non-blocking)
-    makeQR();
-
-    function dataUrlFromCanvasOrImg(el, mime = 'image/png') {
-      if (el.tagName === 'CANVAS') return el.toDataURL(mime);
-      // if img element, draw into temp canvas
-      const cvs = document.createElement('canvas');
-      cvs.width = el.width; cvs.height = el.height;
-      cvs.getContext('2d').drawImage(el, 0, 0);
-      return cvs.toDataURL(mime);
-    }
-
-    function svgFromElement(el, size, bg) {
-      const data = dataUrlFromCanvasOrImg(el, 'image/png');
-      return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="100%" height="100%" fill="${bg}"/><image href="${data}" x="0" y="0" width="${size}" height="${size}"/></svg>`;
-    }
-
-    function downloadURI(uri, name) {
-      const a = document.createElement('a'); a.href = uri; a.download = name; a.click();
-    }
-
-    document.getElementById('btnDownloadPNG').addEventListener('click', () => {
-      const el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
-      if (!el) return alert('Generate a QR first.');
-      downloadURI(dataUrlFromCanvasOrImg(el, 'image/png'), 'qr.png');
-    });
-
-    document.getElementById('btnDownloadSVG').addEventListener('click', async () => {
-      // Export current output as PNG-wrapped SVG for compatibility
-      let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
-      if (!el) await makeQR();
-      el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
-      if (!el) return alert('Generate a QR first.');
-      const size = parseInt(document.getElementById('qrSize').value, 10) || 320;
-      const bg = document.getElementById('qrBg').value || '#ffffff';
-      const svg = svgFromElement(el, size, bg);
-      const blob = new Blob([svg], { type: 'image/svg+xml' });
-      downloadURI(URL.createObjectURL(blob), 'qr.svg');
-    });
-
-    // ---------- QR SCANNER
-    let html5QrCode;
-    const qrReaderEl = document.getElementById('qr-reader');
-    const scanResultEl = document.getElementById('scanResult');
-
-    async function startScanner() {
-      try {
-        if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
-        const cams = await Html5Qrcode.getCameras();
-        const camId = cams?.[0]?.id;
-        if (!camId) throw new Error('No camera found');
-        await html5QrCode.start(camId, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure);
-      } catch (e) { alert('Camera error: ' + e.message); }
-    }
-    function onScanSuccess(decodedText) {
-      scanResultEl.innerHTML = `<div class="srchighlight rounded-xl p-3 bg-slate-900/70 border border-slate-700"><div class="text-xs text-slate-400 mb-1">Result</div><div class="font-mono break-all">${escapeHtml(decodedText)}</div><div class='mt-2'><a class='text-cyan-400 underline' target='_blank' href='${decodedText}'>Open</a></div></div>`;
-    }
-    function onScanFailure() { /* ignore continuous errors */ }
-    document.getElementById('btnScanStart').addEventListener('click', startScanner);
-    document.getElementById('btnScanStop').addEventListener('click', async () => {
-      if (html5QrCode) await html5QrCode.stop();
-    });
-
-    document.getElementById('scanFile').addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
-      const res = await html5QrCode.scanFile(file, true);
-      onScanSuccess(res);
-    });
-
-    function escapeHtml(str) { return str.replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
-
-    // ---------- BACKGROUND REMOVAL
-    const inC = document.getElementById('inCanvas');
-    const outC = document.getElementById('outCanvas');
-    const inCtx = inC.getContext('2d');
-    const outCtx = outC.getContext('2d');
-
-    const bgModeSel = document.getElementById('bgMode');
-    const chromaOptions = document.getElementById('chromaOptions');
-    const chromaColor = document.getElementById('chromaColor');
-    const chromaTol = document.getElementById('chromaTol');
-
-    bgModeSel.addEventListener('change', () => {
-      chromaOptions.classList.toggle('hidden', bgModeSel.value !== 'chroma');
-    });
-
-    let sourceImg;
-    document.getElementById('bgFile').addEventListener('change', (e) => {
-      const f = e.target.files?.[0];
-      if (!f) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => { sourceImg = img; drawInput(img); };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(f);
-    });
-
-    function drawInput(img) {
-      const maxW = 900, maxH = 600;
-      let { width:w, height:h } = img;
-      const ratio = Math.min(maxW / w, maxH / h, 1);
-      w = Math.round(w * ratio); h = Math.round(h * ratio);
-      inC.width = outC.width = w; inC.height = outC.height = h;
-      inCtx.clearRect(0,0,w,h); outCtx.clearRect(0,0,w,h);
-      inCtx.drawImage(img, 0, 0, w, h);
-    }
-
-    async function removeBackground() {
-      if (!sourceImg) return alert('Upload an image first.');
-      if (bgModeSel.value === 'chroma') {
-        chromaKey();
-      } else {
-        await personCutout();
-      }
-    }
-
-    document.getElementById('btnRemoveBg').addEventListener('click', removeBackground);
-
-    document.getElementById('btnDownloadCutout').addEventListener('click', () => {
-      if (!outC.width) return alert('No cutout to download.');
-      outC.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'cutout.png'; a.click(); }, 'image/png');
-    });
-
-    function chromaKey() {
-      const w = inC.width, h = inC.height;
-      const src = inCtx.getImageData(0,0,w,h);
-      const dst = outCtx.createImageData(w,h);
-      const [rT,gT,bT] = hexToRgb(chromaColor.value);
-      const tol = parseInt(chromaTol.value,10);
-      for (let i=0;i<src.data.length;i+=4){
-        const r=src.data[i], g=src.data[i+1], b=src.data[i+2], a=src.data[i+3];
-        const dist = Math.sqrt((r-rT)**2 + (g-gT)**2 + (b-bT)**2);
-        const keep = dist > tol * 3; // rough mapping
-        dst.data[i] = r; dst.data[i+1] = g; dst.data[i+2] = b; dst.data[i+3] = keep ? a : 0;
-      }
-      outCtx.putImageData(dst,0,0);
-    }
-
-    async function personCutout() {
-      // Uses Mediapipe SelfieSegmentation (person only)
-      const w = inC.width, h = inC.height;
-      const selfie = new SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
-      selfie.setOptions({ modelSelection: 1 }); // 0: landscape, 1: general
-      await new Promise(resolve => {
-        selfie.onResults((res) => {
-          const mask = res.segmentationMask; // HTMLCanvasElement
-          // Compose: keep person (white) remove background (black)
-          const tmp = document.createElement('canvas'); tmp.width=w; tmp.height=h;
-          const tctx = tmp.getContext('2d');
-          tctx.drawImage(inC,0,0,w,h);
-          // Use mask as alpha
-          outCtx.clearRect(0,0,w,h);
-          outCtx.save();
-          outCtx.drawImage(mask,0,0,w,h);
-          outCtx.globalCompositeOperation = 'source-in';
-          outCtx.drawImage(inC,0,0,w,h);
-          outCtx.restore();
-          resolve();
-        });
-        // Convert the current canvas to an image and send to Mediapipe as if it were a video frame
-        const img = new Image(); img.onload = () => selfie.send({ image: img });
-        img.src = inC.toDataURL('image/png');
-      });
-    }
-
-    function hexToRgb(hex){
-      const v = hex.replace('#','');
-      const bigint = parseInt(v,16);
-      return v.length===3
-        ? [ (bigint>>8&0xF)*17, (bigint>>4&0xF)*17, (bigint&0xF)*17 ]
-        : [ bigint>>16 & 255, bigint>>8 & 255, bigint & 255 ];
-    }
-
-    // ---------- Minimal Self Tests (console) ----------
-    async function runSelfTests(){
-      const results = [];
-      try {
-        const backend = await ensureQrLib();
-        results.push(['lib-loaded', backend === 'qrcodejs' || backend === 'qrcode-module']);
-        // Test 1: basic QR render
-        document.getElementById('qrText').value = 'test://qr';
-        await makeQR();
-        let el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
-        results.push(['qr-rendered', !!el]);
-        // Test 2: PNG data URL
-        const png = el ? dataUrlFromCanvasOrImg(el) : '';
-        results.push(['png-dataurl', typeof png === 'string' && png.startsWith('data:image/png')]);
-        // Test 3: size change respected
-        document.getElementById('qrSize').value = '256';
-        await makeQR();
-        el = qrDiv.querySelector('canvas') || qrDiv.querySelector('img');
-        const w = el && el.width ? el.width : (el && el.naturalWidth);
-        results.push(['size-256', w === 256]);
-        // Test 4: SVG string build
-        const svg = el ? svgFromElement(el, 128, '#ffffff') : '';
-        results.push(['svg-string', typeof svg === 'string' && svg.includes('<svg')]);
-      } catch (e) {
-        console.error('Self tests error', e);
-        results.push(['exception', false]);
-      }
-      console.table(results.map(([k, v]) => ({ test: k, pass: !!v })));
-    }
-    // Run once after initial paint
-    setTimeout(runSelfTests, 300);
-
-    // ---------- IMAGE COMPRESSION (Local + TinyPNG via proxy)
-    const compFile = document.getElementById('compFile');
-    const compFormatSel = document.getElementById('compFormat');
-    const compQuality = document.getElementById('compQuality');
-    const compMaxW = document.getElementById('compMaxW');
-    const compMaxH = document.getElementById('compMaxH');
-    const compOrigImg = document.getElementById('compOrigImg');
-    const compOutImg = document.getElementById('compOutImg');
-    const compOrigMeta = document.getElementById('compOrigMeta');
-    const compOutMeta = document.getElementById('compOutMeta');
-    const btnCompLocal = document.getElementById('btnCompLocal');
-    const btnCompTiny = document.getElementById('btnCompTiny');
-    const btnCompDownload = document.getElementById('btnCompDownload');
-    const tinyProxy = document.getElementById('tinyProxy');
-
-    let lastCompressedBlob;
-
-    compFile?.addEventListener('change', () => {
-      const f = compFile.files?.[0]; if (!f) return;
-      const url = URL.createObjectURL(f);
-      compOrigImg.src = url;
-      compOrigMeta.textContent = `${f.type} • ${(f.size/1024).toFixed(1)} KB`;
-    });
-
-    btnCompLocal?.addEventListener('click', async () => {
-      const f = compFile.files?.[0]; if (!f) return alert('Upload an image first.');
-      const img = await blobToImage(f);
-      const maxW = parseInt(compMaxW.value,10)||1920;
-      const maxH = parseInt(compMaxH.value,10)||1920;
-      const {canvas,w,h} = drawToFit(img, maxW, maxH);
-      let mime = compFormatSel.value==='auto' ? f.type || 'image/jpeg' : compFormatSel.value;
-      // Browsers may not support requested mime; fallback logic
-      if (!/image\/(png|jpeg|webp)/.test(mime)) mime = 'image/jpeg';
-      const quality = parseFloat(compQuality.value)||0.8;
-      const blob = await canvasToBlob(canvas, mime, quality);
-      lastCompressedBlob = blob;
-      const url = URL.createObjectURL(blob);
-      compOutImg.src = url;
-      compOutMeta.textContent = `${mime} • ${(blob.size/1024).toFixed(1)} KB • ${(100 - (blob.size/f.size*100)).toFixed(1)}% saved`;
-    });
-
-    btnCompTiny?.addEventListener('click', async () => {
-      const f = compFile.files?.[0]; if (!f) return alert('Upload an image first.');
-      const proxy = tinyProxy.value.trim();
-      if (!proxy) return alert('Enter your TinyPNG proxy URL first.');
-      try{
-        const fd = new FormData();
-        fd.append('file', f, f.name);
-        const resp = await fetch(proxy, { method: 'POST', body: fd });
-        if (!resp.ok) throw new Error('Proxy error: '+resp.status);
-        const blob = await resp.blob();
-        lastCompressedBlob = blob;
-        const url = URL.createObjectURL(blob);
-        compOutImg.src = url;
-        compOutMeta.textContent = `${blob.type||'image/png'} • ${(blob.size/1024).toFixed(1)} KB • ${(100 - (blob.size/f.size*100)).toFixed(1)}% saved (TinyPNG)`;
-      } catch(e){ alert('TinyPNG proxy request failed: '+e.message); }
-    });
-
-    btnCompDownload?.addEventListener('click', () => {
-      if (!lastCompressedBlob) return alert('No compressed image yet.');
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(lastCompressedBlob);
-      a.download = 'compressed';
-      a.click();
-    });
-
-    function drawToFit(img, maxW, maxH){
-      let w = img.naturalWidth, h = img.naturalHeight;
-      const ratio = Math.min(maxW / w, maxH / h, 1);
-      w = Math.round(w*ratio); h = Math.round(h*ratio);
-      const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      ctx.drawImage(img, 0, 0, w, h);
-      return {canvas,w,h};
-    }
-    function canvasToBlob(canvas, mime, quality){
-      return new Promise(res => canvas.toBlob(b => res(b), mime, quality));
-    }
-    function blobToImage(blob){
-      return new Promise(res => { const img = new Image(); img.onload=()=>res(img); img.src = URL.createObjectURL(blob); });
-    }
-
-    // ----- Self-tests for compressor (console only)
-    async function compressorSelfTests(){
-      const results=[];
-      try{
-        // create tiny test canvas
-        const c=document.createElement('canvas'); c.width=64; c.height=64; const ctx=c.getContext('2d'); ctx.fillStyle='#0af'; ctx.fillRect(0,0,64,64);
-        const blob=await canvasToBlob(c,'image/png');
-        const img=await blobToImage(blob);
-        const {canvas}=drawToFit(img,32,32);
-        const out=await canvasToBlob(canvas,'image/jpeg',0.8);
-        results.push(['local-compress', out.size>0 && out.size<=blob.size]);
-      }catch(e){ results.push(['exception', false]); console.error(e); }
-      console.table(results.map(([k,v])=>({test:k, pass:!!v})));
-    }
-    setTimeout(compressorSelfTests, 600);
-  </script>
+  <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
