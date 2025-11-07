@@ -1,4 +1,4 @@
-import { canvasToBlob, downloadURI, formatFileSize } from '../utils.js';
+import { canvasToBlob, downloadURI, formatFileSize, trackEvent } from '../utils.js';
 
 let initialized = false;
 
@@ -142,6 +142,11 @@ async function handleFileList(fileList) {
     setStatus('Ready to upscale with Real-ESRGAN.', 'idle');
     updateInfo();
     if (btnUpscale) btnUpscale.disabled = false;
+    trackEvent('upscale_upload', {
+      event_category: 'upscale',
+      event_label: file.type || 'image',
+      value: file.size
+    });
   } catch (err) {
     console.error(err);
     setStatus('Unable to load that image. Please try a different file.', 'error');
@@ -151,6 +156,10 @@ async function handleFileList(fileList) {
     originalImageMeta = { width: 0, height: 0 };
     showPreview(originalPreview, '');
     resetResult();
+    trackEvent('upscale_upload_error', {
+      event_category: 'upscale',
+      event_label: (err?.message || 'load_failed').slice(0, 120)
+    });
   } finally {
     setWorking(false);
   }
@@ -171,6 +180,12 @@ async function runUpscale() {
       progressValue = Math.min(progressValue + 0.08, 0.85);
       setProgress(progressValue);
     }, 600);
+
+    trackEvent('upscale_start', {
+      event_category: 'upscale',
+      event_label: modelKey,
+      value: targetScale
+    });
 
     const resp = await fetch('/api/upscale', {
       method: 'POST',
@@ -253,11 +268,24 @@ async function runUpscale() {
     setProgress(1);
     setTimeout(() => setProgress(null), 400);
     setStatus('Upscale complete. You can download the enhanced image.', 'success');
+    trackEvent('upscale_complete', {
+      event_category: 'upscale',
+      event_label: modelKey,
+      value: finalWidth * finalHeight
+    });
   } catch (err) {
     console.error(err);
     clearProgressTimer();
     setProgress(null);
-    setStatus(err.message || 'Upscaling failed. Please try again.', 'error');
+    let message = err.message || 'Upscaling failed. Please try again.';
+    if (/HUGGINGFACE_TOKEN/i.test(message)) {
+      message = 'Add a HUGGINGFACE_TOKEN environment variable with a valid Hugging Face access token (https://huggingface.co/settings/tokens) and redeploy to enable cloud upscaling.';
+    }
+    setStatus(message, 'error');
+    trackEvent('upscale_error', {
+      event_category: 'upscale',
+      event_label: (err?.message || 'unknown').slice(0, 120)
+    });
   } finally {
     clearProgressTimer();
     setWorking(false);
@@ -351,10 +379,28 @@ export async function init() {
       const url = URL.createObjectURL(resultBlob);
       downloadURI(url, btnDownload.dataset.filename || 'upscaled.png');
       setTimeout(() => URL.revokeObjectURL(url), 4000);
+      trackEvent('upscale_download', {
+        event_category: 'upscale',
+        event_label: btnDownload.dataset.filename || 'upscaled.png'
+      });
     });
   }
 
-  setStatus('Requires deploying with a HUGGINGFACE_TOKEN for the cloud inference endpoint.', 'idle');
+  scaleSel?.addEventListener('change', () => {
+    trackEvent('upscale_scale_change', {
+      event_category: 'upscale',
+      event_label: scaleSel.value
+    });
+  });
+
+  modelSel?.addEventListener('change', () => {
+    trackEvent('upscale_model_change', {
+      event_category: 'upscale',
+      event_label: modelSel.value
+    });
+  });
+
+  setStatus('Requires deploying with a HUGGINGFACE_TOKEN for the cloud inference endpoint. See the deployment guide for setup instructions.', 'idle');
   updateInfo();
   initialized = true;
 }

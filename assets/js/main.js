@@ -1,3 +1,5 @@
+import { trackEvent } from './utils.js';
+
 const root = document.documentElement;
 const themeToggleEl = document.getElementById('themeToggle');
 const themeLabelEl = themeToggleEl ? themeToggleEl.querySelector('.theme-label') : null;
@@ -31,6 +33,7 @@ if (themeToggleEl && themeLabelEl) {
   themeToggleEl.addEventListener('click', () => {
     const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
+    trackEvent('theme_toggle', { event_category: 'theme', event_label: next });
   });
 
   const systemHandler = (event) => {
@@ -70,6 +73,7 @@ const tabLoaders = {
 };
 
 const loadedTabs = new Set();
+let currentTab = null;
 
 async function loadTab(key) {
   if (loadedTabs.has(key)) return;
@@ -92,6 +96,10 @@ function showTab(key) {
     el.classList.toggle('hidden', panelKey !== key);
   });
   loadTab(key);
+  if (currentTab !== key) {
+    currentTab = key;
+    trackEvent('tab_selected', { event_category: 'navigation', event_label: key });
+  }
 }
 
 document.querySelectorAll('.tab-btn').forEach((btn) => {

@@ -22,7 +22,10 @@ export default async function handler(req, res) {
   try {
     const token = process.env.HUGGINGFACE_TOKEN;
     if (!token) {
-      res.status(500).json({ error: 'HUGGINGFACE_TOKEN not set' });
+      res.status(500).json({
+        error:
+          'Missing HUGGINGFACE_TOKEN environment variable. Create a Hugging Face access token at https://huggingface.co/settings/tokens and set it as HUGGINGFACE_TOKEN in your deployment settings.'
+      });
       return;
     }
 
