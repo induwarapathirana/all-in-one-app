@@ -1,5 +1,8 @@
 // api/sam.js - proxies cutout requests to a Hugging Face SAM/background removal model
 const DEFAULT_MODEL = process.env.HUGGINGFACE_SAM_MODEL || 'briaai/RMBG-1.4';
+const HF_INFERENCE_BASE = (process.env.HUGGINGFACE_INFERENCE_BASE ||
+  'https://router.huggingface.co/hf-inference/models'
+).replace(/\/$/, '');
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -73,7 +76,8 @@ export default async function handler(req, res) {
     const contentType = typeof mime === 'string' && mime ? mime : 'image/png';
     const modelId = DEFAULT_MODEL;
 
-    const hfResp = await fetch(`https://api-inference.huggingface.co/models/${modelId}`, {
+    const endpoint = `${HF_INFERENCE_BASE}/${modelId}`;
+    const hfResp = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

@@ -3,6 +3,9 @@ const MODEL_MAP = {
   general: 'nateraw/real-esrgan',
   anime: 'nateraw/real-esrgan-x4plus-anime'
 };
+const HF_INFERENCE_BASE = (process.env.HUGGINGFACE_INFERENCE_BASE ||
+  'https://router.huggingface.co/hf-inference/models'
+).replace(/\/$/, '');
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -71,7 +74,8 @@ export default async function handler(req, res) {
     const buffer = Buffer.from(image, 'base64');
     const contentType = typeof mime === 'string' && mime ? mime : 'image/png';
 
-    const hfResp = await fetch(`https://api-inference.huggingface.co/models/${modelId}`, {
+    const endpoint = `${HF_INFERENCE_BASE}/${modelId}`;
+    const hfResp = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
