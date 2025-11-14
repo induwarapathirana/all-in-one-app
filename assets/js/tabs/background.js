@@ -16,6 +16,9 @@ let personConfidenceVal;
 let personFeather;
 let personFeatherVal;
 let samNote;
+let samNoteDefaultHtml = '';
+let samOption;
+let samReady = false;
 let statusLine;
 let removeBtn;
 
@@ -283,9 +286,14 @@ function downloadCutout() {
 }
 
 function handleModeChange() {
+  if (bgModeSel.value === 'sam' && samOption?.disabled) {
+    bgModeSel.value = 'auto-person';
+  }
   chromaOptions.classList.toggle('hidden', bgModeSel.value !== 'chroma');
   personOptions.classList.toggle('hidden', bgModeSel.value !== 'auto-person');
-  samNote?.classList.toggle('hidden', bgModeSel.value !== 'sam');
+  if (samReady) {
+    samNote?.classList.toggle('hidden', bgModeSel.value !== 'sam');
+  }
   if (bgModeSel.value === 'auto-person') {
     syncPersonControls();
     if (sourceImg) {
@@ -293,6 +301,54 @@ function handleModeChange() {
     }
   }
   trackEvent('bg_mode_change', { event_category: 'background', event_label: bgModeSel.value });
+}
+
+async function checkSamAvailability() {
+  if (!samOption) {
+    handleModeChange();
+    return;
+  }
+  try {
+    const resp = await fetch('/api/sam?status=1');
+    if (!resp.ok) {
+      throw new Error('Failed to check SAM availability.');
+    }
+    const payload = await resp.json();
+    samReady = Boolean(payload?.ready);
+    if (samReady) {
+      samOption.disabled = false;
+      if (samNote) {
+        samNote.innerHTML = samNoteDefaultHtml;
+        samNote.classList.add('hidden');
+        delete samNote.dataset.state;
+      }
+    } else {
+      samOption.disabled = true;
+      if (bgModeSel?.value === 'sam') {
+        bgModeSel.value = 'auto-person';
+      }
+      if (samNote) {
+        samNote.textContent =
+          payload?.error ||
+          'Cloud SAM mode is unavailable. Add a HUGGINGFACE_TOKEN in your deployment settings to enable it.';
+        samNote.classList.remove('hidden');
+        samNote.dataset.state = 'error';
+      }
+    }
+  } catch (error) {
+    samReady = false;
+    samOption.disabled = true;
+    if (bgModeSel?.value === 'sam') {
+      bgModeSel.value = 'auto-person';
+    }
+    if (samNote) {
+      samNote.textContent = 'Unable to reach the SAM endpoint. Check your deployment logs or network connectivity.';
+      samNote.classList.remove('hidden');
+      samNote.dataset.state = 'error';
+    }
+  } finally {
+    handleModeChange();
+  }
 }
 
 async function samCutout() {
@@ -391,6 +447,10 @@ export async function init() {
   personFeather = document.getElementById('personFeather');
   personFeatherVal = document.getElementById('personFeatherVal');
   samNote = document.getElementById('samNote');
+  samOption = bgModeSel ? bgModeSel.querySelector('option[value="sam"]') : null;
+  if (samNote) {
+    samNoteDefaultHtml = samNote.innerHTML.trim();
+  }
   statusLine = document.getElementById('bgStatus');
   removeBtn = document.getElementById('btnRemoveBg');
 
@@ -435,6 +495,7 @@ export async function init() {
   bgModeSel?.addEventListener('change', handleModeChange);
   syncPersonControls();
   handleModeChange();
+  await checkSamAvailability();
 
   removeBtn?.addEventListener('click', removeBackground);
   document.getElementById('btnDownloadCutout')?.addEventListener('click', downloadCutout);

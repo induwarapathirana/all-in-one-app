@@ -322,6 +322,10 @@ input[type="range"] {
   color: #ef4444;
 }
 
+#samNote[data-state="error"] {
+  color: #ef4444;
+}
+
 .preview-img {
   max-height: 18rem;
   width: auto;

@@ -29,6 +29,8 @@ let originalImageMeta = { width: 0, height: 0 };
 let resultBlob = null;
 let working = false;
 let progressTimer = null;
+let serviceReady = false;
+let readinessChecked = false;
 
 function setStatus(message, state = 'idle') {
   if (!statusEl) return;
@@ -57,7 +59,7 @@ function clearProgressTimer() {
 
 function setWorking(isWorking) {
   working = isWorking;
-  if (btnUpscale) btnUpscale.disabled = isWorking || !originalFile;
+  if (btnUpscale) btnUpscale.disabled = isWorking || !originalFile || !serviceReady;
   if (btnDownload) btnDownload.disabled = isWorking || !resultBlob;
   if (dropZone) dropZone.classList.toggle('disabled', isWorking);
   if (scaleSel) scaleSel.disabled = isWorking;
@@ -139,9 +141,11 @@ async function handleFileList(fileList) {
     originalImageMeta = { width: img.width, height: img.height };
     showPreview(originalPreview, dataUrl);
     resetResult();
-    setStatus('Ready to upscale with Real-ESRGAN.', 'idle');
+    if (serviceReady) {
+      setStatus('Ready to upscale with Real-ESRGAN.', 'idle');
+    }
     updateInfo();
-    if (btnUpscale) btnUpscale.disabled = false;
+    if (btnUpscale) btnUpscale.disabled = !serviceReady;
     trackEvent('upscale_upload', {
       event_category: 'upscale',
       event_label: file.type || 'image',
@@ -167,6 +171,12 @@ async function handleFileList(fileList) {
 
 async function runUpscale() {
   if (!originalFile || !originalBase64 || working) return;
+  if (!serviceReady) {
+    const ready = await checkUpscalerAvailability(true);
+    if (!ready) {
+      return;
+    }
+  }
   const modelKey = modelSel ? modelSel.value : 'general';
   const modelLabel = MODEL_LABELS[modelKey] || MODEL_LABELS.general;
   const targetScale = parseInt(scaleSel ? scaleSel.value : '4', 10) || 4;
@@ -280,6 +290,8 @@ async function runUpscale() {
     let message = err.message || 'Upscaling failed. Please try again.';
     if (/HUGGINGFACE_TOKEN/i.test(message)) {
       message = 'Add a HUGGINGFACE_TOKEN environment variable with a valid Hugging Face access token (https://huggingface.co/settings/tokens) and redeploy to enable cloud upscaling.';
+      serviceReady = false;
+      readinessChecked = false;
     }
     setStatus(message, 'error');
     trackEvent('upscale_error', {
@@ -290,6 +302,39 @@ async function runUpscale() {
     clearProgressTimer();
     setWorking(false);
   }
+}
+
+async function checkUpscalerAvailability(force = false) {
+  if (readinessChecked && !force) {
+    return serviceReady;
+  }
+  readinessChecked = true;
+  try {
+    if (statusEl && !serviceReady) {
+      setStatus('Checking cloud upscaler configuration…', 'busy');
+    }
+    const resp = await fetch('/api/upscale?status=1');
+    if (!resp.ok) {
+      throw new Error('Failed to verify upscaler readiness.');
+    }
+    const payload = await resp.json();
+    serviceReady = Boolean(payload?.ready);
+    if (serviceReady) {
+      setStatus('Upload a JPG or PNG to analyze size and prepare the model.', 'idle');
+    } else {
+      setStatus(
+        payload?.error ||
+          'Cloud upscaling is unavailable. Add a HUGGINGFACE_TOKEN in your deployment settings to enable it.',
+        'error'
+      );
+    }
+  } catch (error) {
+    serviceReady = false;
+    setStatus('Unable to reach the upscaler endpoint. Check your deployment logs or network connectivity.', 'error');
+  } finally {
+    setWorking(false);
+  }
+  return serviceReady;
 }
 
 function buildDownloadName() {
@@ -400,8 +445,8 @@ export async function init() {
     });
   });
 
-  setStatus('Requires deploying with a HUGGINGFACE_TOKEN for the cloud inference endpoint. See the deployment guide for setup instructions.', 'idle');
   updateInfo();
+  await checkUpscalerAvailability(true);
   initialized = true;
 }
 

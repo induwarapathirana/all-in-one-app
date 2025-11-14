@@ -14,6 +14,20 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (req.method === 'GET') {
+    const tokenPresent = Boolean(process.env.HUGGINGFACE_TOKEN);
+    if (!tokenPresent) {
+      res.status(200).json({
+        ready: false,
+        error:
+          'Cloud upscaling is not configured. Add a HUGGINGFACE_TOKEN environment variable to enable the Hugging Face proxy.'
+      });
+      return;
+    }
+    res.status(200).json({ ready: true, models: MODEL_MAP });
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
